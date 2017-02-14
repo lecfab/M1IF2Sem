@@ -1,0 +1,179 @@
+%/!\ /!\ 
+%
+% PLEASE DO NOT EDIT THIS IF YOU CAME HERE BY MISTAKE !!!!
+%
+
+% RTFMN : https://tobi.oetiker.ch/lshort/lshort.pdf
+
+\documentclass{article}
+\usepackage{xspace}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{multicol}
+\usepackage{stmaryrd}
+\usepackage{tikz, pgf}
+\usetikzlibrary{arrows,intersections}
+\usepackage{libertine}
+\usepackage[a4paper,left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{dsfont}
+
+
+\usepackage[linktocpage]{hyperref}
+
+\setlength{\hoffset}{-18pt}         
+\setlength{\oddsidemargin}{15pt} % Marge gauche sur pages impaires
+\setlength{\evensidemargin}{15pt} % Marge gauche sur pages paires
+\setlength{\marginparwidth}{0pt} % Largeur de note dans la marge
+\setlength{\textwidth}{481pt} % Largeur de la zone de texte 
+\setlength{\marginparsep}{7pt} % Séparation de la marge
+\setlength{\topmargin}{0pt} % Pas de marge en haut
+\setlength{\headheight}{13pt} % Haut de page
+\setlength{\headsep}{10pt} % Entre le haut de page et le texte
+\setlength{\footskip}{50pt} % Bas de page + séparation
+\setlength{\textheight}{600pt} % Hauteur de la zone de texte 
+
+%\setlength{\hoffset}{-18pt}         
+%\setlength{\oddsidemargin}{15pt} % Marge gauche sur pages impaires
+%\setlength{\evensidemargin}{15pt} % Marge gauche sur pages paires
+%\setlength{\marginparwidth}{0pt} % Largeur de note dans la marge
+%\setlength{\textwidth}{481pt} % Largeur de la zone de texte 
+%\setlength{\marginparsep}{7pt} % Séparation de la marge
+%\setlength{\topmargin}{0pt} % Pas de marge en haut
+%\setlength{\headheight}{8pt} % Haut de page
+%\setlength{\headsep}{0pt} % Entre le haut de page et le texte
+%\setlength{\footskip}{15pt} % Bas de page + séparation
+%\setlength{\textheight}{700pt} % Hauteur de la zone de texte 
+
+%\newcommand{\ket}[1]{\ensuremath{|#1\rangle}\xspace}
+%\newcommand{\bra}[1]{\ensuremath{\langle #1|}\xspace}
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{defi}[thm]{Definition}
+\newtheorem{ex}[thm]{Example}
+
+\newcommand{\Thm}[3]{\begin{thm}[#1]\label{#2}#3\end{thm}}
+\newcommand{\Ex}[3]{\begin{ex}[#1]\label{#2}#3\end{ex}}
+\newcommand{\Def}[3]{\begin{defi}[#1]\label{#2}#3\end{defi}}
+
+\newcommand{\hsp}{\hspace{20pt}}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\brakets}[1]{\langle#1\rangle}
+\newcommand{\betaar}{\rightarrow_\beta}
+\newcommand{\betar}{\twoheadrightarrow_\beta}
+\newcommand{\alphaeq}{=_\alpha}
+
+\newcommand{\ind}[1]{\mathds{1}_{#1}}
+
+\title{Preuves et Programmes}
+\author{Philippe Audebaud}
+\date{Fall 2017}
+
+
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{(Pure) Lambda Calculus}
+\subsection{Computing with functions}
+Main question : How do we do maths ? To answer that we can see:
+
+\begin{itemize}
+\item Having structures:
+We want to manipulate numbers, spaces (of points, vectors and functions). (Eidenberg-Mac Lane, Category Theory, 1942). Those things will be the \underline{types}.
+
+\item Build, explore and transform structures (Church's $\lambda$-calculus, 1930). Theses things with be programs, proofs.
+
+\item Compare «stuff», with equality for instance (equality comes first !) (Voevaski, 2006, Algebraic Topology)
+
+\item Provide a framework (rules) to reasoning on theses previous things.  This points is somehow the first point that comes when we want to do Maths.
+\end{itemize}
+
+One can notice that it is, in fact, basically, recent research.
+
+\subsection{Informal introduction to Church's $\lambda$-calculus.}
+
+We take a function : $\begin{array}{l c c r}
+f: & A & \rightarrow & B\\
+& x & \mapsto & e
+\end{array}$. Given $a\in A$, $f(a)$ is the image, we replace (kind of) each occurrence of $x$ in $e$ by an occurrence of $a$. Then we get $e\brakets{a/x}$. We say that we apply $f$ to $a$. We can denote $f\ a$ when there is no ambiguity. In terms of $\lambda$-calculus, we can define $f$ like that: $f\equiv \lambda x.e$ where $\equiv$ is the definitional equality. Then $f\ a\equiv (\lambda x.e)\ a$.
+
+For the syntax, if there is no parenthesis, all what is after the $.$ is part of the body of the function.
+
+\Ex{}{}{Here are some examples
+\begin{itemize}
+\item $\lambda x.x$ is the function $x\mapsto x$ is the identity function.
+\item If $x$ and $y$ are two distinct variables the function $\lambda x.y$ as no effect since $y\brakets{a/x}\equiv y$ and then $(\lambda x.y)\ a \equiv y$.
+\end{itemize}}
+
+To «compute» terms we have to introduce a kind of reduction $\betaar$, a binary relation on $\lambda$-terms. For instance, $(\lambda x.a) b \betaar a\brakets{b/x}$.
+
+Some terms also seems to be «equivalent». Then we may need some $\lambda$-equivalence, let say $\alphaeq$. For instance we would like to say when $y\neq x$ is a fresh variable that $\lambda x.e \alphaeq \lambda y.e\brakets{y/x}$. To state  $\lambda x.a \alphaeq \lambda y.b$, we might need some fresh variable $z$ such that $a\brakets{z/x}\alphaeq b\brakets{z/y}$.
+\\
+\\
+To be completed next week.
+
+\subsection{A toolbox on $\lambda$-calculus.}
+Let $\X$ be a denumerable set of variables range over $x,y,z,...$.
+\Def{$\lambda$-terms}{def:lterms}{A $\lambda$-term $e$ is generated by the following grammar $e::= x\in\X | \lambda x.e | e e$. The set of $lambda$ terms is denoted $\Lambda$.}
+
+\Def{Free variable}{def:freeVar}{The set of free variable in a term $e$, denoted $FV(e)$ is	defined inductively by:
+
+\begin{itemize}
+\item if $e = x\in\X$ then $FV(x) \equiv \{x\}$.
+\item if $e = \lambda x.a$ then $FV(e)\equiv FV(a)\backslash\{x\}$.
+\item if $e = a\ b$ then $FV(e)\equiv FV(a)\cup FV(b)$.
+\item if $e$ is closed $FV(e)=\emptyset$.
+\end{itemize}}
+
+\Ex{}{}{\begin{itemize}
+\item $e\equiv \lambda x.x$ then $FV(e) = \emptyset$.
+\item $e\equiv \lambda x.y$ then $FV(e) = \{y\}$.
+\end{itemize}}
+
+\Def{Subsitution}{def:sub}{Given $x\in\X, a\in\Lambda$ the substitution of (all the) occurrences of $x$ in $e$ by $a$, denoted $e\brakets{a/x}$ is: \begin{itemize}
+\item if $e\equiv y\in\X\backslash\{x\}$ then $y\brakets{a/x}\equiv y$ otherwise $x\brakets{a/x}\equiv a$.
+\item $(\lambda y.e)\brakets{a/x}\equiv\lambda y.e\brakets{a/x}$
+\item $(e\ f)\brakets{a/x}\equiv e\brakets{a/x}\ f\brakets{a/x}$.
+\end{itemize} }
+
+\Def{The $\betaar$ relation}{def:betaar}{The binary relation $\betaar$ over $\Lambda$ is $\betaar\subseteq\Lambda\times\Lambda$ such that $\betaar\equiv\{((\lambda x.a)\ b, a\brakets{b/x})|x\in\X,a\in\Lambda,b\in\Lambda\}$}
+
+\Ex{}{}{\begin{itemize}
+\item $(\lambda x.(\lambda y.y)\ a)\ b\betaar((\lambda y.y)\ a)\brakets{b/x} \equiv (\lambda y.y)\brakets{b/x}\ a\brakets{b/x} \equiv(\lambda y.y)\ a\brakets{b/x}$
+\item $(\lambda x.y)\ a\betaar y$
+\item Russell paradox: $(\lambda x. x\ x) (\lambda x.x\ x)\betaar (x\ x)\brakets{(\lambda x.x\ x)/x}$ or $(x\ x)\brakets{(\lambda y.y\ y)/x} \equiv (\lambda x. x\ x) (\lambda x.x\ x)$ modulo $\alphaeq$ (or exactly that if you consider the case before the "or"). Then it reduces to itself and the reduction does not terminate.
+\end{itemize}}
+
+With the last example we see that we need $\betaar\subseteq\beta_0\subseteq\beta\equiv\beta_0^*$. For some $\beta_0$ and $\beta$ the $\beta$-reduction, $\beta\equiv\betaar^*$ also denoted $\betar$.
+
+\Def{$\beta_0$-contraction}{def:b0contract}{Let $a,b\in\Lambda$ we define $a\beta_0 b$: \begin{itemize}
+\item $x\beta_0 x$
+\item $(\lambda x.u) v\beta_0 u\brakets{v/x}$
+\item $(\lambda x.u) \beta_0 (\lambda x.v)$ if $u\beta_0 v$
+\item $(u\ v)\beta_0 (u'\ v)$ if $u\beta_0 u'$ 
+\item $(u\ v)\beta_0 (u\ v')$ if $v\beta_0 v'$ 
+\end{itemize}}
+
+\end{document}

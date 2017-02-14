@@ -1,0 +1,5 @@
+\select@language {english}
+\contentsline {section}{\numberline {1}(Pure) Lambda Calculus}{2}{section.1}
+\contentsline {subsection}{\numberline {1.1}Computing with functions}{2}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Informal introduction to Church's $\lambda $-calculus.}{2}{subsection.1.2}
+\contentsline {subsection}{\numberline {1.3}A toolbox on $\lambda $-calculus.}{2}{subsection.1.3}
