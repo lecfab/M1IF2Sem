@@ -238,13 +238,13 @@ Output $x/n\approx p$
 Using Hoeffding bound we get $\Pr(|x-pN|\geq t)\leq 2\exp(-2t^2/N)$, then $\Pr(|x-pN|\geq t'\sqrt{N})\leq 2\exp(-2t'^2)$ for any $t'$. Then we get $p$ with approximation $1\pm\frac{10}{\sqrt{N}}$ with $t'=10$.
 
 
-\Def{}{}{Let $D_1$ and $D_2$ be two distributions. An algorithm $A:\{O,1\}^n\rightarrow\{O,1\}$ with support $\{O,1\}^n$ is distinguishable if $Adv_A(D_1,D_2) := |\Pr_{x\hookrightarrow D_1}(A(x)=1)-\Pr_{x\hookrightarrow D_2}(A(x)=1)|$ is non-negligible.}
+\Def{Distinguishability}{def:disting}{Let $D_1$ and $D_2$ be two distributions. An algorithm $A:\{O,1\}^n\rightarrow\{O,1\}$ with support $\{O,1\}^n$ is distinguishable if $Adv_A(D_1,D_2) := |\Pr_{x\hookrightarrow D_1}(A(x)=1)-\Pr_{x\hookrightarrow D_2}(A(x)=1)|$ is non-negligible.}
 
-$G(\{O,1\}^s)$ is a tiny subset of $\{O,1\}^n$ but we want it to look uniform.
+$G(\{0,1\}^s)$ is a tiny subset of $\{0,1\}^n$ but we want it to looks uniform. We want it is indistinguishable from the uniform distribution.
 
-\Def{Indistinguishability from uniform}{}{$D_1$ and $D_2$ are indistinguishable if for any PPT $A:\{0,1\}^n\rightarrow\{0,1\}$ $Adv_A(D_1,D_2)$ is negligible.}
+\Def{Indistinguishability}{def:indisting}{$D_1$ and $D_2$ are indistinguishable if for any PPT $A:\{0,1\}^n\rightarrow\{0,1\}$ $Adv_A(D_1,D_2)$ is negligible.}
 
-\Def{}{}{A PRG $G$ is pseudo-random is $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
+\Def{Pseudo-Random PRG}{def:pseudoRandPRG}{A PRG $G$ is pseudo-random is $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
 
 
 \end{document}
