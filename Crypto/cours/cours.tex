@@ -1,0 +1,250 @@
+%/!\ /!\ 
+%
+% PLEASE DO NOT EDIT THIS IF YOU CAME HERE BY MISTAKE !!!!
+%
+
+% RTFMN : https://tobi.oetiker.ch/lshort/lshort.pdf
+
+\documentclass{article}
+\usepackage{xspace}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{multicol}
+\usepackage{stmaryrd}
+\usepackage{tikz, pgf}
+\usetikzlibrary{arrows,intersections}
+\usepackage{libertine}
+\usepackage[a4paper,left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{dsfont}
+
+
+\usepackage[linktocpage]{hyperref}
+
+\setlength{\hoffset}{-18pt}         
+\setlength{\oddsidemargin}{15pt} % Marge gauche sur pages impaires
+\setlength{\evensidemargin}{15pt} % Marge gauche sur pages paires
+\setlength{\marginparwidth}{0pt} % Largeur de note dans la marge
+\setlength{\textwidth}{481pt} % Largeur de la zone de texte 
+\setlength{\marginparsep}{7pt} % Séparation de la marge
+\setlength{\topmargin}{0pt} % Pas de marge en haut
+\setlength{\headheight}{13pt} % Haut de page
+\setlength{\headsep}{10pt} % Entre le haut de page et le texte
+\setlength{\footskip}{50pt} % Bas de page + séparation
+\setlength{\textheight}{600pt} % Hauteur de la zone de texte 
+
+%\setlength{\hoffset}{-18pt}         
+%\setlength{\oddsidemargin}{15pt} % Marge gauche sur pages impaires
+%\setlength{\evensidemargin}{15pt} % Marge gauche sur pages paires
+%\setlength{\marginparwidth}{0pt} % Largeur de note dans la marge
+%\setlength{\textwidth}{481pt} % Largeur de la zone de texte 
+%\setlength{\marginparsep}{7pt} % Séparation de la marge
+%\setlength{\topmargin}{0pt} % Pas de marge en haut
+%\setlength{\headheight}{8pt} % Haut de page
+%\setlength{\headsep}{0pt} % Entre le haut de page et le texte
+%\setlength{\footskip}{15pt} % Bas de page + séparation
+%\setlength{\textheight}{700pt} % Hauteur de la zone de texte 
+
+%\newcommand{\ket}[1]{\ensuremath{|#1\rangle}\xspace}
+%\newcommand{\bra}[1]{\ensuremath{\langle #1|}\xspace}
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{defi}[thm]{Definition}
+\newtheorem{ex}[thm]{Example}
+
+\newcommand{\Thm}[3]{\begin{thm}[#1]\label{#2}#3\end{thm}}
+\newcommand{\Ex}[3]{\begin{ex}[#1]\label{#2}#3\end{ex}}
+\newcommand{\Def}[3]{\begin{defi}[#1]\label{#2}#3\end{defi}}
+\newcommand{\Lem}[3]{\begin{lem}[#1]\label{#2}#3\end{lem}}
+\newcommand{\Cor}[3]{\begin{cor}[#1]\label{#2}#3\end{cor}}
+\newcommand{\Prop}[3]{\begin{prop}[#1]\label{#2}#3\end{prop}}
+
+\newcommand{\hsp}{\hspace{20pt}}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\brakets}[1]{\langle#1\rangle}
+\newcommand{\betaar}{\rightarrow_\beta}
+\newcommand{\betar}{\twoheadrightarrow_\beta}
+\newcommand{\alphaeq}{=_\alpha}
+
+\newcommand{\ind}[1]{\mathds{1}_{#1}}
+\renewcommand{\epsilon}{\varepsilon}
+
+\title{Cryptography}
+\author{Benoit Libert et Damien Stehlé	}
+\date{Fall 2017}
+
+
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+Cryptography is the science of information security, not just encryption. In a sense it is not just Information Theory.
+
+The most classical form of encryption must satisfy:
+\begin{itemize}
+\item a talk to $B$ iver a public channel
+\item we don't eavesdropper C to understand the communication.
+\end{itemize}
+
+\Ex{}{}{Take a client and a server such that each of them have a Browser with 2 stages:
+\begin{itemize}
+\item 1: Handshake. They create a common session key, $K$
+\item 2: Using $K$, they can encrypt and decrypt the communication.
+\end{itemize}
+
+We will see the first step later, and in the following we will shortly deal with the second.
+}
+
+We have to deal with:
+\begin{itemize}
+\item Secret key cryptography: $A$ and $B$ use the same secret key $K$ to communicate
+\item Cryptography is not just an encryption:
+\begin{itemize}
+\item How $A$ can be sure je is really talking to $B$ (use of digital signatures)
+\item How can they know the that the communication has not been modified ? (Question of integrity)
+\item What if I don't want to reveal my identity ? (Anonymous communication)
+\end{itemize} 
+\item More complex primitives and properties:
+\begin{itemize}
+\item Digital cash: should be anonymous, infeasible to fake or duplicate
+\item E-voting: $n$ voter choose candidates, majority wins but votes should be anonymous, it must impossible to vote twice, votes must be verified.
+\end{itemize}
+\end{itemize}
+
+Cryptography is a science on its own. It has its own methodology. Basically, we can sum it up in this few steps:
+\begin{itemize}
+\item One defines what the protocol has to do
+\item One defines the attacker's goal and power. The aim is to give a security model.
+\item One describes a protocol realisation
+\item One «proves» that, if an «efficient» attacker exists, then some hard problem can be solved (e.g. factoring, computing discrete logarithms).
+\end{itemize}
+
+Cryptography often plays with some hard problems. It is a kind of face of complexity theory. It always suppose that protocols' specifications and description are public, the adversary knows how the protocol works, only the key remains private (Kerckhoff's principle).
+
+However cryptography has its limitations:
+\begin{itemize}
+\item it relies on algorithmic assumptions and does not ensure unconditional security.
+\item does not protect against engineering bugs (FREAK attack (2015), attack intercepts https connections and forces client/server to use weak encryption, or LOGJAM attack (2015), client/server forced to use too short keys)
+\item some attacks are out-of-model exists: side-channel information (e.g. power consumption may leak the key)
+\item backdoors may be correctly introduced in cryptographic implementations
+\item security threats may be unrelated to cryptography
+\end{itemize}
+
+\section{One-time pad and perfect security}
+\Def{Encrytion Scheme}{def:encrysch}{An encryption scheme $(Keygen, Enc, Dec)$ operates over finite sets $(K,P,C)$ with:
+\begin{itemize}
+\item $Keygen$ chooses $k$ uniformly in $K$
+\item $Enc : K\times P \rightarrow C$
+\item $Dec : K\times C \rightarrow P$
+\end{itemize}
+such that $\forall m\in P, k\in K, Dec(k,Enc(k,m))=m$.
+\begin{itemize}
+\item $m$ and $k$ are independent random variables
+\item $Enc$ may be probabilistic but $Dec$ is usually deterministic
+\item We assume (in the following) that elements of $K,P,C$ have non-zero probabilities.
+\end{itemize}}
+
+\Def{Perfect security (Shannon, 1949)}{def:perfSec}{For any message distribution $\mathcal{M}$ over $P$, \[\forall \bar{m}\in P, \Pr_{m\hookrightarrow\mathcal{M}, k\hookrightarrow U(K)}(m=\bar{m}|Enc(k,m))\]}
+
+\underline{Remark:} The intuition is that giving $E(k,m)$ does not leaks any information about $m$. Formally, $m$ and $Enc(k,m)$ are independent.
+
+\Lem{Shannon}{}{Perfect security implies that $|K|\geq|P|$}
+\begin{proof}
+By contradiction assume $|K|<|P|$. Then define $P(\bar{c})=\{m\in P|\exists k\in K, m=Dec(k,\bar{c})\}$. Then $|P(\bar{c})\leq|K|$ since $\forall m\in P(\bar{c}),\exists k\in K, m=Dec(k,\bar{c})$.
+
+Then by our assumption $P-P(\bar{c})\neq\emptyset$. Let $\bar{m}$ be in this set. Then $\Pr(m=\bar{m}|\bar{c}=Enc(k,m))=0\neq\Pr(m=\bar{m})$. That is a contradiction with perfect security (ck previous remark).
+\end{proof}
+
+\Def{One-time Pad (OPT), Vernam's cipher (patented in 1917)}{def:OTP}{We take $K=\{0,1\}^l=P=C$. $Enc(k,m) = m\oplus k$ and $Dec(k,c)=c\oplus k$}
+
+\Thm{}{thm:OPTPerfect}{Vernam's cipher is perfectly secret}
+\begin{proof}
+Let $\bar{m}\in P, \bar{c}\in C$ arbitrary. If we have $\Pr(c=\bar{c}|m=\bar{m})=\Pr(c=\bar{c}))=\Pr(c=\bar{c})$ then by multiplying by $\frac{\Pr(m=\bar{m})}{\Pr(c=\bar{c})}$ we get the result. Then let's compute it:
+\[\begin{array}{r c l}
+\Pr(c=\bar{c}|m=\bar{m}) & = & \Pr(m\oplus k=\bar{c}|m=\bar{m})\\
+&=&\Pr(\bar{m}\oplus k \bar{c})\\
+&=&\frac{1}{2^l}
+\end{array}\]
+\[\begin{array}{r c l}
+\Pr(c=\bar{c}) & = & \sum_{\bar{m}}\Pr(\bar{c}=\bar{c}|m=\bar{m})\Pr(\bar{m}=m)\\
+&=&\frac{1}{2^l}\sum_{\bar{m}}\Pr(\bar{m}=m)\\
+&=&\frac{1}{2^l}
+\end{array}\]
+\end{proof}
+
+The major problems with that are:
+\begin{itemize}
+\item key is as long as the message
+\item we cannot encrypt twice with the same key ($Enc=Dec$)
+\item Assumes an unbounded adversary (too powerful)
+\end{itemize}
+
+\section{Pseudo-random generators (PRG) and stream ciphers}
+\subsection{One-time pad and pseudo-randomness}
+\underline{Idea:} use the OPT with pseudo-random bits rather than truly random ones.
+
+\begin{itemize}
+\item We want to use a PRG $G:\{0,1\}^s\rightarrow\{0,1\}^n$ with $n\gg s$
+\item Input $k\in\{0,1\}^s$, called \underline{seed} and contains all the randomness
+\item $G$ is computable in deterministic polynomial time
+\item Tempting idea for encryption: $Enc(k,m) = m\oplus G(k)$ and $Dec(c,k) = c\oplus k$ ($m\in\{0,1\}^n$ is longer than $s$).
+\end{itemize}
+\underline{Question:} Perfect secrecy is impossible. Can we get computational security ?
+
+\Def{Negligible function}{def:negligFunc}{$f:\N\rightarrow\R$ is negligible if $\forall c>0,\exists n_0\in\N, \forall n>n_0,|f(n)|<n^{-c}$}
+
+\Ex{}{}{$2^{-n}$, $n^{-\log n}$... are negligible functions of $n$.}
+
+\Prop{}{}{For any negligible function $\epsilon$, for any polynomial $P$, the product $P(n)\epsilon(n)$ is still negligible}
+
+\Def{Predictable PRG}{def:predPRG}{
+A PRG is \underline{predictable} if there exists a PPT (Proba Poly Time) algorithm $A$ and an index $i\in\llbracket1,m\rrbracket$ such that:
+\[\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])>\frac{1}{2}+\epsilon(s)\]
+for some non-negligible function of $s$, $\epsilon>0$.}
+\underline{Remark:} It restricts the adversary's power (otherwise $A$ could use all possible $k$) and the probability is taken over the uniform choice of $k$ and the internal randomness of $A$.
+
+\underline{Remark: } A PRG is unpredictable if for all PPT algorithm and index, $\epsilon$ is negligible.
+
+\underline{Question: } How to compute $p:=\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])$ ?\\
+Set $x::=0$.\\
+Repeat $N$ times: \begin{itemize}
+\item choose $k$ uniformly
+\item If $A(G(k|[1...i])=G(k)[i+1]$ increment $x$
+\end{itemize}
+Output $x/n\approx p$
+
+Using Hoeffding bound we get $\Pr(|x-pN|\geq t)\leq 2\exp(-2t^2/N)$, then $\Pr(|x-pN|\geq t'\sqrt{N})\leq 2\exp(-2t'^2)$ for any $t'$. Then we get $p$ with approximation $1\pm\frac{10}{\sqrt{N}}$ with $t'=10$.
+
+
+\Def{}{}{Let $D_1$ and $D_2$ be two distributions. An algorithm $A:\{O,1\}^n\rightarrow\{O,1\}$ with support $\{O,1\}^n$ is distinguishable if $Adv_A(D_1,D_2) := |\Pr_{x\hookrightarrow D_1}(A(x)=1)-\Pr_{x\hookrightarrow D_2}(A(x)=1)|$ is non-negligible.}
+
+$G(\{O,1\}^s)$ is a tiny subset of $\{O,1\}^n$ but we want it to look uniform.
+
+\Def{Indistinguishability from uniform}{}{$D_1$ and $D_2$ are indistinguishable if for any PPT $A:\{0,1\}^n\rightarrow\{0,1\}$ $Adv_A(D_1,D_2)$ is negligible.}
+
+\Def{}{}{A PRG $G$ is pseudo-random is $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
+
+
+\end{document}
