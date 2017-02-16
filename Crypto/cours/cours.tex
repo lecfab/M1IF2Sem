@@ -233,18 +233,18 @@ Repeat $N$ times: \begin{itemize}
 \item choose $k$ uniformly
 \item If $A(G(k|[1...i])=G(k)[i+1]$ increment $x$
 \end{itemize}
-Output $x/n\approx p$
+Output $x/N\approx p$
 
 Using Hoeffding bound we get $\Pr(|x-pN|\geq t)\leq 2\exp(-2t^2/N)$, then $\Pr(|x-pN|\geq t'\sqrt{N})\leq 2\exp(-2t'^2)$ for any $t'$. Then we get $p$ with approximation $1\pm\frac{10}{\sqrt{N}}$ with $t'=10$.
 
 
-\Def{Distinguishability}{def:disting}{Let $D_1$ and $D_2$ be two distributions. An algorithm $A:\{O,1\}^n\rightarrow\{O,1\}$ with support $\{O,1\}^n$ is distinguishable if $Adv_A(D_1,D_2) := |\Pr_{x\hookrightarrow D_1}(A(x)=1)-\Pr_{x\hookrightarrow D_2}(A(x)=1)|$ is non-negligible.}
+\Def{Distinguishability}{def:disting}{Let $D_1$ and $D_2$ be two distributions. They are distinguishable if there is a PPT algorithm $\mathcal{A}:\{0,1\}^n\rightarrow\{0,1\}$ with support $\{0,1\}^n$ such that $Adv_\mathcal{A}(D_1,D_2) := |\Pr_{x\hookrightarrow D_1}(\mathcal{A}(x)=1)-\Pr_{x\hookrightarrow D_2}(\mathcal{A}(x)=1)|$ is non-negligible. Then $\mathcal{A}$ is a distinguisher for $D_1$ and $D_2$.}
 
 $G(\{0,1\}^s)$ is a tiny subset of $\{0,1\}^n$ but we want it to looks uniform. We want it is indistinguishable from the uniform distribution.
 
-\Def{Indistinguishability}{def:indisting}{$D_1$ and $D_2$ are indistinguishable if for any PPT $A:\{0,1\}^n\rightarrow\{0,1\}$ $Adv_A(D_1,D_2)$ is negligible.}
+\Def{Indistinguishability}{def:indisting}{$D_1$ and $D_2$ are indistinguishable if for any PPT $\mathcal{A}:\{0,1\}^n\rightarrow\{0,1\}$ $Adv_\mathcal{A}(D_1,D_2)$ is negligible.}
 
-\Def{Pseudo-Random PRG}{def:pseudoRandPRG}{A PRG $G$ is pseudo-random is $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
+\Def{Pseudo-Random Generator (PRG)}{def:pseudoRandPRG}{A PRG $G$ is pseudo-random if $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
 
 
 \end{document}
