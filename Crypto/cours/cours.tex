@@ -15,6 +15,7 @@
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{amssymb}
+\usepackage{algorithme}
 \usepackage{mathrsfs}
 \usepackage{amsfonts}
 \usepackage{multicol}
@@ -227,13 +228,15 @@ for some non-negligible function of $s$, $\epsilon>0$.}
 
 \underline{Remark: } A PRG is unpredictable if for all PPT algorithm and index, $\epsilon$ is negligible.
 
-\underline{Question: } How to compute $p:=\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])$ ?\\
-Set $x::=0$.\\
-Repeat $N$ times: \begin{itemize}
-\item choose $k$ uniformly
-\item If $A(G(k|[1...i])=G(k)[i+1]$ increment $x$
-\end{itemize}
-Output $x/N\approx p$
+\underline{Question: } How to compute $p:=\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])$ ? On way to do so is to proceed as the following algorithm:\\
+
+
+\begin{algorithme}
+$x::=0$\\
+\ForFromTo{i}{1}{N}{choose $k$ uniformly at random\\
+If $A(G(k|[1...i])=G(k)[i+1]$ increment $x$}
+\Return{$x/N\approx p$}
+\end{algorithme}
 
 Using Hoeffding bound we get $\Pr(|x-pN|\geq t)\leq 2\exp(-2t^2/N)$, then $\Pr(|x-pN|\geq t'\sqrt{N})\leq 2\exp(-2t'^2)$ for any $t'$. Then we get $p$ with approximation $1\pm\frac{10}{\sqrt{N}}$ with $t'=10$.
 
