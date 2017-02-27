@@ -276,23 +276,23 @@ In all cases the machine halts in quadratic time, what concludes the proof.
 \end{proof}
 
 \section{Optimality of the previous simulation.}
-Let us define $C_i(x)$ thee sequence of states $(q_j)_{j\in\llbracket1;j_i\rrbracket}$ such that $q_1$ is the state we reach when the head of the tape points to cell $i+1$ for the first time, $q_2$ is the state when for the first time after $q_1$ the head is pointing on cell $i$, and so on.
+Let us define $C_i(x)$ the sequence of states $(q_j)_{j\in\llbracket1;j_i\rrbracket}$ such that $q_1$ is the state we reach when the head of the tape points to cell $i+1$ for the first time, $q_2$ is the state when for the first time after $q_1$ the head is pointing on cell $i$, and so on.
 
 Let $Pal_n=\{x0^{2n}\bar{x}|x\in\Sigma^n\}$.
 
 We will consider a $1$-tape Turing Machine $\mathcal{M}$ that recognizes $Pal$ and halts in time $T(n)$.
 \subsection{Equalities between crossing sequences and equality between word.}
-\Lem{Building recognized word from others}{lem:buildRecog}{Let $x,y\in\mathcal{L}(\mathcal{M})$, such that $C_i(x)=C_i(y)$. Let $x_{1..i}$ be the prefix of length $i$ of $x$. We the same notation we have $x_{1...i}y_{i+1...|y|}\in\mathcal{L}(\mathcal{M})$.}
+\Lem{Building recognized word from others}{lem:buildRecog}{Let $x,y\in\mathcal{L}(\mathcal{M})$, such that $C_i(x)=C_j(y)$. Let $x_{1..i}$ be the prefix of length $i$ of $x$. We the same notation we have $x_{1...i}y_{j+1...|y|}\in\mathcal{L}(\mathcal{M})$.}
 \begin{proof}
-The crossing states are the same. Let $q_1^x,...,q_{n_x}^x$ be the sequence of states of the computation of $\mathcal{M}$ on input $x$, and $q_1^y,...,q_{n_y}^y$ the one on input $y$. Let $q_1,...,q_k=C_i(x)=C_i(y)$. We consider $\forall i,q_i=q_{j_i^x}^x=q_{j_i^y}^y$, respect to the order.
+The crossing states are the same. Let $q_1^x,...,q_{n_x}^x$ be the sequence of states of the computation of $\mathcal{M}$ on input $x$, and $q_1^y,...,q_{n_y}^y$ the one on input $y$. Let $q_1,...,q_k=C_i(x)=C_j(y)$.
 \begin{itemize}
-\item if $k$ is even, $k=2k'$. Then \[q_1^x,...q_{j_1^x}^x,q_{j_1^y+1}^y,...q_{j_2^y}^y,q_{j_2^x+1}^x,...,q_{j_{2p+1}^x}^x,q_{j_{2p+1}^y+1}^y,...,q_{j_{2(p+1)}^y}^y,q_{j_{2(p+1)}^x+1}^x,...,q_{j_{2k'}^y}^y,q_{j_{2k'}^x+1}^x,...q_{n_x}^x\] is the sequence of state on input $x_{1...i}y_{i+1...|y|}$. Then is finishes in an (the) accepting state.
-\item if $k$ is odd, $k=2k'+1$. Then \[q_1^x,...q_{j_1^x}^x,q_{j_1^y+1}^y,...q_{j_2^y}^y,q_{j_2^x+1}^x,...,q_{j_{2p+1}^x}^x,q_{j_{2p+1}^y+1}^y,...,q_{j_{2(p+1)}^y}^y,q_{j_{2(p+1)}^x+1}^x,...,q_{j_{2k'+1}^x}^x,q_{j_{2k'+1}^y+1}^y,...q_{n_y}^y\] is the sequence of state on input $x_{1...i}y_{i+1...|y|}$. Then is finishes in an (the) accepting state.
+\item if $k$ is even, $k=2k'$. Then \[q_1^x,...q_{j_1^x}^x,q_{j_1^y+1}^y,...q_{j_2^y}^y,q_{j_2^x+1}^x,...,q_{j_{2p+1}^x}^x,q_{j_{2p+1}^y+1}^y,...,q_{j_{2(p+1)}^y}^y,q_{j_{2(p+1)}^x+1}^x,...,q_{j_{2k'}^y}^y,q_{j_{2k'}^x+1}^x,...q_{n_x}^x\] is the sequence of state on input $x_{1...i}y_{j+1...|y|}$. Then is finishes in an (the) accepting state.
+\item if $k$ is odd, $k=2k'+1$. Then \[q_1^x,...q_{j_1^x}^x,q_{j_1^y+1}^y,...q_{j_2^y}^y,q_{j_2^x+1}^x,...,q_{j_{2p+1}^x}^x,q_{j_{2p+1}^y+1}^y,...,q_{j_{2(p+1)}^y}^y,q_{j_{2(p+1)}^x+1}^x,...,q_{j_{2k'+1}^x}^x,q_{j_{2k'+1}^y+1}^y,...q_{n_y}^y\] is the sequence of state on input $x_{1...i}y_{j+1...|y|}$. Then is finishes in an (the) accepting state.
 \end{itemize}
 \end{proof}
-\Prop{}{prop:3.1}{Let $x,y\in Pal_n$. $\exists x',y'\in\Sigma^n,x=x'0^{2n}\overline{x'}\wedge y=y'0^{2n}\overline{y'}$. Let us suppose the machine is deterministic and that $\exists i\in\llbracket n+1,3n-1\rrbracket, C_i(x) = C_i(y)$. Then $x=y$.}
+\Prop{}{prop:3.1}{Let $x,y\in Pal_n$. $\exists x',y'\in\Sigma^n,x=x'0^{2n}\overline{x'}\wedge y=y'0^{2n}\overline{y'}$. Let us suppose the machine is deterministic and that $\exists i,j\in\llbracket n+1,3n-1\rrbracket, C_i(x) = C_j(y)$. Then $x=y$.}
 \begin{proof}
-Let us take $z=x'0^{2n}\overline{y'}$. Just apply lemma \ref{lem:buildRecog} on $x,y,z,i$ to get that $z\in Pal$. Then we get that $\overline{x'}=\overline{y'}$. Then $x'=y'$ and $x=y$.
+Let us take $z=x'0^{2n}\overline{y'}$. Just apply lemma \ref{lem:buildRecog} on $x,y,z,i,j=i$ to get that $z\in Pal$. Then we get that $\overline{x'}=\overline{y'}$. Then $x'=y'$ and $x=y$.
 \end{proof}
 
 \subsection{Upper bound on $|C_i(y)|$}
