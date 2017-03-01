@@ -70,6 +70,10 @@
 \newcommand{\Cor}[3]{\begin{cor}[#1]\label{#2}#3\end{cor}}
 \newcommand{\Prop}[3]{\begin{prop}[#1]\label{#2}#3\end{prop}}
 
+\newcommand{\Rem}{\underline{Remark:}}
+\newcommand{\Idea}{\underline{Idea:}}
+\newcommand{\Question}{\underline{Question:}}
+
 \newcommand{\hsp}{\hspace{20pt}}
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 \newcommand{\R}{\mathbb{R}}
@@ -77,6 +81,7 @@
 \newcommand{\K}{\mathbb{K}}
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\C}{\mathcal{C}}
+\newcommand{\A}{\mathcal{A}}
 \newcommand{\X}{\mathcal{X}}
 \newcommand{\brakets}[1]{\langle#1\rangle}
 \newcommand{\betaar}{\rightarrow_\beta}
@@ -228,7 +233,7 @@ for some non-negligible function of $s$, $\epsilon>0$.}
 
 \underline{Remark: } A PRG is unpredictable if for all PPT algorithm and index, $\epsilon$ is negligible.
 
-\underline{Question: } How to compute $p:=\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])$ ? On way to do so is to proceed as the following algorithm:\\
+\underline{Question: } How to compute $p:=\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])$ ? One way to do so is to proceed as the following algorithm:\\
 
 
 \begin{algorithme}
@@ -247,7 +252,80 @@ $G(\{0,1\}^s)$ is a tiny subset of $\{0,1\}^n$ but we want it to looks uniform. 
 
 \Def{Indistinguishability}{def:indisting}{$D_1$ and $D_2$ are indistinguishable if for any PPT $\mathcal{A}:\{0,1\}^n\rightarrow\{0,1\}$ $Adv_\mathcal{A}(D_1,D_2)$ is negligible.}
 
-\Def{Pseudo-Random Generator (PRG)}{def:pseudoRandPRG}{A PRG $G$ is pseudo-random if $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
+\Def{Indistinguishability from uniform}{def:unifPRG}{A PRG $G$ is indistinguishable from uniform if $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
 
+\Def{unpredicatable PRG}{def:unpredPRG}{A PRG $G$ is unpredictable if dor evry PPT algorithm $\A$ and every $i\in\{1,...,n\}$,
+\[|\Pr_{k\hookrightarrow U(\{0,1\}^s)}(\A(G(k)[1...i])=G(k)[i+1])-\frac{1}{2}|\leq negl(s)\]
+for some $negl:\N\rightarrow\N$.
+}
+
+\Rem Statistical distinguishers always exist. A random $x\hookrightarrow U(\{0,1\}^n)$ belongs to $G(\{0,1\}^s)$ with proba $\frac{1}{2^{n-s}}$. Distinguisher can try all possible $k\in\{0,1\}^s$ (we just hope it is to costly).
+
+\Thm{}{thm:indisUnpredEquiv}{Definition \ref{def:unpredPRG} and \ref{def:unifPRG} are equivalent.}
+
+\begin{proof}
+\begin{itemize}
+\item Easy part: if there is a predictor, there is a distinguisher. Let $i\in\{1,..,n\}$ and a predictor $\A:\{0,1\}^i\rightarrow\{0,1\}$ running in PPT such that 
+\[\Pr_k(\A(G(k)[1...i])=G(k)[i+1])>\frac{1}{2}+\epsilon\]
+for some negligible $\epsilon>0$.
+
+We build $\A':\{0,1\}^n\rightarrow\{0,1\}$ which, given $x=x_1$, $x_n\in\{0,1\}^n$ decides if $x=G(k)$ for some $k\in\{0,1\}^s$ or $x\hookrightarrow U(\{0,1\}^n)$. Define it as follows: $\A':x\mapsto\left\{\begin{array}{r l}
+1 & \text{if $\A(x_1,...,x_n)=x_{i+1}$}\\
+0 & \text{otherwise}
+\end{array}\right.$
+\[\begin{array}{r c l}
+Adv_{\A'} &=& |\Pr_{k\hookrightarrow U(\{0,1\}^s)}(\A'(G(k))=1)-\Pr_{x\hookrightarrow U(\{0,1\}^n)}(\A'(x)=1)|\\
+&=& |\Pr_k(\A(G(k)[1...i])=G(k)[i+1]) - \frac{1}{2}|\\
+&=& |(\frac{1}{2}+\epsilon)-\frac{1}{2}|\\
+&=& \epsilon
+\end{array}\]
+\item Here the harder part. We use an hybrid argument. Let $D_n=G(U(\{0,1\}^s))$ and $D_0=U(\{0,1\}^n)$. Let $\A$ be a PPT distinguisher such that $Adv_\A(D_n,D_0)\geq\epsilon$ for some non-negligible $\epsilon$. Let $D_i$ an hybrid distribution over $\{0,1\}^n$ where the first $i$ bits are those of $G(k)$ and that last $n-i$ bit are uniform, \[D_i=\{G(k)[1...i]||Y(\{0,1\}^{n-i})|k\hookrightarrow U(\{0,1\}^s)\}\]
+
+By the triangle equality, there exists $i\in\{1...n\}$ such that $Adv_\A(D_i,D_{i+1})\geq\frac{\epsilon}{n}$. We build a predictor by choosing $i\hookrightarrow U(\{1...n\})$. $\A'$ takes input $(x_1...x_i)\in G(k)[1...i]\subseteq\{0,1\}^i$ and should find $G(k)[i+1]$ using $\A$.
+$\A'$ chooses $x_{i+1}...x_n\hookrightarrow U(\{0,1\})$ and feed $\A$ with $x_1...x_n$.
+\begin{itemize}
+\item If $\A$ outputs $0$, it believes it sees $D_i$ meaning that $x_{i+1}\hookrightarrow U(\{0,1\})$ Then $\A'$ outputs $1-x_{i+1}$.
+\item If $\A$ outputs $1$, it believes it sees $D_{i+1}$ meaning that $x_{i+1}=G(k)[i+1]$. Then $\A'$ outputs $x_{i+1}$.
+\end{itemize}
+We now want to compute $\Pr(\A'(G(k)[1...i])=G(k)[i+1])$.
+
+Let us define $\overline{D_{i+1}}$ as $D_{i+1}$ where the $(i+1)^{th}$ bit is flipped. We interpret $D_i$ as the weighted sum of $D_{i+1}$ and $\overline{D_{i+1}}$. Then $\A'$ feeds $\A$ with $D_{i+1}$ or with $\overline{D_{i+1}}$ both with probability $\frac{1}{2}$.
+\begin{itemize}
+\item If $\A'$ feeds $\A$ with $D_{i+1}$, then $x_{i+1}=G(k)[i+1]$ and $\A'$ outputs $G(k)[i+1]$ iff $\A$ returns $1$.
+\item If $\A'$ feeds $\A$ with $\overline{D_{i+1}}$, then $x_{i+1}=1-G(k)[i+1]$ and $\A'$ outputs $G(k)[i+1]$ iff $\A$ returns $0$.
+\end{itemize}
+Let $p=\Pr_k(\A'(G(k)[1...i])=G(k)[i+1])$
+\[\begin{array}{r c l}
+p &=& \Pr_{x\hookrightarrow D_i}((\A(x)=0\wedge x_{i+1}=1-G(k)[i+1])\vee(A(x)=1\wedge x_{i+1}=G(k)[i+1]))\\
+&=& \Pr_{x\hookrightarrow D_i}(\A(x)=0\wedge x_{i+1}=1-G(k)[i+1])+\Pr_{x\hookrightarrow D_i}(A(x)=1\wedge x_{i+1}=G(k)[i+1])\\
+&=& \Pr_{x\hookrightarrow D_i}(A(x)=0|x_{i+1}=1-G(k)[i+1])\Pr(x_{i+1}=1-G(k)[i+1])\\
+&& +\Pr_{x\hookrightarrow D_i}(A(x)=1|x_{i=1}=G(k)[i+1])\Pr(x_{i+1}=G(k)[i+1]) \\
+&=& \Pr_{x\hookrightarrow D_i}(A(x)=0|x_{i+1}=1-G(k)[i+1])\frac{1}{2} 	+\Pr_{x\hookrightarrow D_i}(A(x)=1|x_{i=1}=G(k)[i+1])\frac{1}{2}\\
+&=& \frac{1}{2}(\Pr_{x\hookrightarrow D_{i+1}}(A(x)=1)+\Pr_{x\hookrightarrow\overline{D_{i+1}}}(A(x)=0))\\
+&=& \frac{1}{2}(\Pr_{x\hookrightarrow D_{i+1}}(A(x)=1)+1-\Pr_{x\hookrightarrow\overline{D_{i+1}}}(A(x)=1))
+\end{array}\]
+Also $\Pr_{x\hookrightarrow D_i}(A(x)=1)=\frac{1}{2}(\Pr_{x\hookrightarrow D_{i+1}}(A(x)=1)+\Pr_{x\hookrightarrow\overline{D_{i+1}}}(A(x)=1))$. Then  $2\Pr_{x\hookrightarrow D_i}(A(x)=1)-(\Pr_{x\hookrightarrow D_{i+1}}(A(x)=1)=\Pr_{x\hookrightarrow\overline{D_{i+1}}}(A(x)=1)$. Then 
+\[\begin{array}{r c l}
+p &=& \frac{1}{2}(1+\Pr_{x\hookrightarrow D_{i+1}}(A(x)=1)+\Pr_{x\hookrightarrow D_{i+1}}(A(x)=1))-\Pr_{x\hookrightarrow D_i}(A(x)=1)\\
+&=& \frac{1}{2} + \Pr_{x\hookrightarrow D_{i+1}}(A(x)=1)-\Pr_{x\hookrightarrow D_i}(A(x)=1)
+\end{array}
+\]
+Then
+\[\begin{array}{r c l}
+Adv_{\A'} &=& |p-\frac{1}{2}|\\
+&=& |\Pr_{x\hookrightarrow D_{i+1}}(A(x)=1)-\Pr_{x\hookrightarrow D_i}(A(x)=1)|\\
+&=& \frac{\epsilon}{n}\\
+&=& \frac{Adv_\A(D_{i+1},D_i)}{n}
+\end{array}\]
+\end{itemize}
+\subsection{Building and using PRGs is not trivial}
+\begin{itemize}
+\item Linear feedback shift registers (LFSRs) (used in GSM, CSS-DVD, blue-tooth) is very efficient in hardware (see TDs)
+\item RC4 used in TLS now deemed too weak; statistical bias already in the first few bits.
+\item eastream $\{0,1\}^s\times\{0,1\}^n\rightarrow\{0,1\}^n$ where second argument is a nonce used to randomize seed.
+\end{itemize}
+\paragraph{Using PRG encrypt is non-trivial} Double encryption is non secure. Let $c_1=Enc(k,m_1)=m_1\oplus G(k)$ and $c_2=Enc(k,m_2)=m_2\oplus G(k)$ then $c_1\oplus c_2 = m_1\oplus m_2$.
+\underline{Other attempt:} WEP (Wired Equivalent Privacy) (used in IEEE 80211 norm to secure wifi networks replaced by WPA in 2003). $Enc(k,m)$ take short IV and compute $c=m\oplus PRG(IV||k)$. WEP128
+\end{proof}
 
 \end{document}
