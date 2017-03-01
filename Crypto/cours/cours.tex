@@ -318,6 +318,7 @@ Adv_{\A'} &=& |p-\frac{1}{2}|\\
 &=& \frac{Adv_\A(D_{i+1},D_i)}{n}
 \end{array}\]
 \end{itemize}
+\end{proof}
 \subsection{Building and using PRGs is not trivial}
 \begin{itemize}
 \item Linear feedback shift registers (LFSRs) (used in GSM, CSS-DVD, blue-tooth) is very efficient in hardware (see TDs)
@@ -325,7 +326,92 @@ Adv_{\A'} &=& |p-\frac{1}{2}|\\
 \item eastream $\{0,1\}^s\times\{0,1\}^n\rightarrow\{0,1\}^n$ where second argument is a nonce used to randomize seed.
 \end{itemize}
 \paragraph{Using PRG encrypt is non-trivial} Double encryption is non secure. Let $c_1=Enc(k,m_1)=m_1\oplus G(k)$ and $c_2=Enc(k,m_2)=m_2\oplus G(k)$ then $c_1\oplus c_2 = m_1\oplus m_2$.
-\underline{Other attempt:} WEP (Wired Equivalent Privacy) (used in IEEE 80211 norm to secure wifi networks replaced by WPA in 2003). $Enc(k,m)$ take short IV and compute $c=m\oplus PRG(IV||k)$. WEP128
-\end{proof}
+\underline{Other attempt:} WEP (Wired Equivalent Privacy) (used in IEEE 80211 norm to secure wifi networks replaced by WPA in 2003). $Enc(k,m)$ take short IV and compute $c=m\oplus PRG(IV||k)$. WEP128 takes 24 bits for IV and 104 for $k$ (the PRG has 128 bits seeds). Wery quickly all IVS have been used and the same ssed is used twice. Then successive IVs make seeds highly correlated.
+\subsection{Encryption with semantic security}
 
+\underline{Shanon (perfect security):} the distribution $Enc(k,m_0)$ and $Enc(k,m_1)$ shuold be identical for any $m_0,m_1$. Then $|k|=|m|$ ($|K|=|P|$), what is a too strong property.\\
+\underline{Semantic security :} for one-time keys and chosen plain-text attacks. From a random $k\hookrightarrow U(K)$, $Enc(k,m_0)$ should be computationally indistinguishable from $Enc(k,m_1)$.
+
+\Def{Semantically secureness}{def:semSecure}{An ecryption scheme $(Keygen,Enc,Dec)$ over $(K,l,C)$ is semantically secure if, for any PPT adversary $\A$, there exists a negligible function $negl:\N\rightarrow\N$ such that $Adv_\A(\lambda)\leq negl(\lambda)$.}
+
+Consider the experiment $Exp-b$ where $b\in\{0,1\}$.
+\begin{itemize}
+\item $\A$ is given $A^\lambda$ and chooses messages $M_0,m81$ of the same length
+\item Challenger chooses a key $k\hookrightarrow Keygen(1^\lambda)$ and computes $c=Enc(k,M_b)$ which is given to $\A$.
+\item $\A$ outputs $b'\in\{0,1\}$ and wins if $b=b'$. 
+\end{itemize}
+$Adv_\A=|\Pr(\A^{Exp-1}(1^\lambda)=1)-\Pr(\A^{Exp-0}(1^\lambda)=1)|$.
+
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node	[]	at 	(0,6)	{Challenger};
+\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
+\node	[]	at	(0,4)	{$k\hookrightarrow Keygen(1^\lambda)$};
+\node	[]	at	(0,1)	{Test if $b=b'$};
+
+\draw	[->]	(1,4.5)	--node[above]	{$1^\lambda$}	(5,4.5);
+\draw	[->]	(5,3.5)	--node[above]	{$M_0,M_1$}		(1,3.5);
+\draw	[->]	(1,2.5)	--node[above]	{$c=Enc(k,M_b)$}	(5,2.5);
+\draw	[->]	(5,1.5)	--node[above]	{$b'$}		(1,1.5);
+\end{tikzpicture}
+\end{center}
+
+\Rem $Adv_\A=2|\Pr(b=b')-\frac{1}{2}|$.
+\begin{itemize}
+\item One time keys is a very important restriction
+\item One time pad: $\Pr(\A(M_0\oplus k)=1)=\Pr(\A(M_1\oplus k)=1)$.
+\end{itemize}
+
+\paragraph{Secure PRG implies semantically secure encryption}
+Let $G:\{0,1\}^s\rightarrow\{0,1\}^n$ be a PRG. Encrypt $M\in\{0,1\}^n$ using $k\in\{0,1\}^s$ as $c=M\oplus G(k)$.
+Decrypt c as $M=c\oplus G(k)$.
+
+\Thm{}{thm:securePRGSemSecEncryt}{If $G$ is a PRG, then $Enc(k,M)=M\oplus G(k)$ is a semantically secure encryption scheme : If there exists a PPT $\A$ with advantage $\epsilon$ against semantic security, there exists a PRG distinguisher $\mathcal{B}$ with advantage $\frac{\epsilon}{2}$.}
+\begin{proof} (reduction).
+Idea og the proof:
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node	[]	at 	(0,6)	{PRG Challenger};
+\node	[]	at	(6,6)	{Reducion $\mathcal{B}$};
+\node	[]	at	(8,2.75)	{Adversary $\A$};
+\node	[]	at	(8,2.25)	{against semantic security};
+
+\draw	[-]		(3,0)	--								(3,7);
+\draw	[-]		(3,7)	--								(10,7);
+\draw	[-]		(3,5)	--								(10,5);			
+
+\draw	[->]	(5,3.5)	--node[above]	{$M_0,M_1$}		(3.5,3.5);
+\draw	[->]	(-1,3)	--node[above]	{$x\in\{0,1\}$} (2.5,3);
+\node	[]	at	(1,2.75)	{with $x\hookrightarrow U(\{0,1\})$};
+\node	[]	at	(1,2.25)	{or $x=G(k)$};
+\node	[]	at	(1,1.75)	{with $k\hookrightarrow U(\{0,1\}^s)$};
+\draw	[-]		(-1,3)	--								(-1,4.5);
+\draw	[->]	(3.5,2.5)	--node[above]	{$c=Enc(k,M_b)$}	(5,2.5);
+\draw	[->]	(5,1.5)	--node[above]	{$b'$}		(3.5,1.5);
+\end{tikzpicture}
+\end{center}
+
+$Exp$-$b$:
+\begin{itemize}
+\item $\A$ chooses $M_0,M_1\in\{0,1\}^n$
+\item $\mathcal{B}$ chooses $k\hookrightarrow U(\{0,1\}^s)$ and gives $c=M_b\oplus G(k)$ to $\A$.
+\item $\A$ outputs $b'$.
+\end{itemize}
+
+$Rond$-$b$:
+\begin{itemize}
+\item $\A$ chooses $M_0,M_1\in\{0,1\}^n$
+\item $\mathcal{B}$ chooses $x\hookrightarrow U(\{0,1\}^n)$ and gives $c=M_b\oplus x$ to $\A$
+\item $\A$ outputs $b'$
+\end{itemize}
+
+By hypothesis, $Adv_\A=|\Pr(A^{Exp-1}=1)-\Pr(\A^{Exp-0}=1)|\geq\epsilon$. Also $|\Pr(A^{Round-1}=1)-\Pr(\A^{Round-0}=1)|=0$. How does $\mathcal{B}$ works?
+\begin{itemize}
+\item $\mathcal{B}$ receives $x\in\{0,1\}^n$ and must decide if $x=G(k)$ or uniform.
+\item When receiving $M_0,M_1$ form $\A$ it returns $c=M_b\oplus x$ for a random $b\hookrightarrow U(\{0,1\})$
+\item Output $b'$
+\end{itemize}
+If $b'=b$, it outputs $1$ ($x=G(k)$) otherwise it outputs $0$ -$x$ uniform). In the first case it runs $Exp-1$ or $Exp-0$ with same proba. In the second, idem is the $Round$ experiments, that are the same from $\A$'s point of view.
+\end{proof}
 \end{document}
