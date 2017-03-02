@@ -165,7 +165,7 @@ However cryptography has its limitations:
 \item $Enc : K\times P \rightarrow C$
 \item $Dec : K\times C \rightarrow P$
 \end{itemize}
-such that $\forall m\in P, k\in K, Dec(k,Enc(k,m))=m$.
+such that $\forall m\in P, k\in K, Dec(k,Enc(k,m))=m$ and such there are PPT algorithms that compute each of those previous functions.
 \begin{itemize}
 \item $m$ and $k$ are independent random variables
 \item $Enc$ may be probabilistic but $Dec$ is usually deterministic
@@ -336,7 +336,7 @@ Adv_{\A'} &=& |p-\frac{1}{2}|\\
 
 Consider the experiment $Exp-b$ where $b\in\{0,1\}$.
 \begin{itemize}
-\item $\A$ is given $A^\lambda$ and chooses messages $M_0,m81$ of the same length
+\item $\A$ is given $A^\lambda$ and chooses messages $M_0,M_1$ of the same length
 \item Challenger chooses a key $k\hookrightarrow Keygen(1^\lambda)$ and computes $c=Enc(k,M_b)$ which is given to $\A$.
 \item $\A$ outputs $b'\in\{0,1\}$ and wins if $b=b'$. 
 \end{itemize}
