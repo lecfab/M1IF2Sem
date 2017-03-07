@@ -82,6 +82,7 @@
 \newcommand{\betaar}{\rightarrow_\beta}
 \newcommand{\betar}{\twoheadrightarrow_\beta}
 \newcommand{\alphaeq}{=_\alpha}
+\newcommand{\rRule}[3]{\displaystyle\frac{#2}{#3}\ (\ensuremath{#1})} 
 
 \newcommand{\ind}[1]{\mathds{1}_{#1}}
 
@@ -299,13 +300,111 @@ C'est donc une relation d'équivalence qui contient $\beta$. Par définition \re
 Exercice
 \end{proof}
 
-\section{Calcul propositionnel}
+\subsection{Paradoxe de Russel}
+On compare la théorie naïve des ensembles et les lambda termes.
+\begin{itemize}
+\item les éléments correspondent à $e\in\Lambda$
+\item une collection d'éléments $E$ (ensembles) correspondent à $\lambda x.e$
+\item la relation d'appartenance $e\in E$ correspond à $E e$
+\item l'égalité dans l'ensemble correspond à $=_\beta$.
+\end{itemize}
+
+Soit $R$ la collection des ensembles qui ne s'appartiennent pas eux même. Si c'est un ensemble. $R\in R \Leftrightarrow \neg (R\in R)$.
+
+Il vient si $n$ est un $\lambda$-terme pour la négation $R\equiv \lambda x.n\ (x\ x)$. Donc $R\ R \betaar n\ (R\ R)$.
+
+Soit $\Omega\equiv (\lambda x.x\ x)\ (\lambda x.x\ x)$.
+
+Soit $Y = \lambda f(\lambda x.f\ (x\ x))\ (\lambda x.f\ (x\ x)).$
+
+Ces termes 
+
+\section{Calcul propositionnel (cf. notes de P.Audebaud)}
 \subsection{Éléments de langage (informel)}
 On parle ici de théorie de la démonstration (prouvabilité) et la théorie des modèles (validité, vérité). On parle donc du lien entre correction (ce qui est prouvé est vrai) et complétude (ce qui est vrai est prouvable). 
+
+On se pose la question du vrai. En logique classique tout est énoncé est soit vrai soit faux, c'est l'axiome du tiers-exclu. Cependant en informatique, tout énoncé n'est pas nécessairement décidable. En logique intuitionniste on s'intéresse aux éléments de la preuve. Le faux n'est pas le problème en lui même n'est pas le problème mais l'usage qui en est fait.
+
+On s'intéresse en particulier à la logique intuitionniste.
 
 \Def{Proposition}{def:prop}{Les formules du calcul propositionnel sont définies par la grammaire suivante :
 \[A::=X|\top|\bot|A\Rightarrow B|A\wedge B| A\vee B\cancel{|\neg A}\]
 On dira alors que $A$ engendré par cette grammaire est une proposition.}
 
-On portera des jugement sur ces énoncés (propositions) du genre "$A$ $true$". On aura aussi des des jugements hypothétiques $A_1\ true,..., A_n\ true\vdash B\ true$.
+On portera des jugement sur ces énoncés (propositions) du genre "$A$ $true$". On aura aussi des des jugements hypothétiques $A_1\ true,..., A_n\ true\vdash B\ true$. On utilise des règles de déduction du genre
+\[\rRule{R}{Prémisse_1\ ...\ Prémisse_n}{Conclusion}\]
+
+On utilisera plusieurs règles (voir section \ref{reglededuc})
+
+On a aussi quelques règles suspectes. L’affaiblissement :
+\[\rRule{W}{\Delta \vdash B\ true}{\Delta,A\vdash B\ true}\]
+La contraction :
+\[\rRule{C}{\Delta,A,A\vdash}{\Delta,A\vdash B}\]
+Permutation : 
+\[\rRule{P}{\Delta\vdash B,\ \Gamma \text{ permutation de $\Delta$}}{\Gamma\vdash B}\]
+Réflexivité :
+\[\rRule{R}{}{A\vdash A}\]
+
+\subsection{Règles de déduction de la logique intuitionniste}
+Pourra être complété par l'annexe de Philippe Audebaud
+\label{reglededuc}
+\subsubsection{Conjonction}
+On a la formation
+\[\rRule{\wedge_F}{A\ prop\ \ \ B\ prop}{A\wedge B\ prop}\]
+On a l'introduction
+\[\rRule{\wedge_I}{A\ true\ \ \ B\ true}{A\wedge B\ true}\]
+On a l'élimination
+\[\begin{array}{r l}\rRule{\wedge_E}{A\wedge B\ true}{A\ true}&\rRule{\wedge_E}{A\wedge B\ true}{B\ true}\end{array}\]
+\subsubsection{Le vrai $\top$}
+On a formation et introduction
+\[\begin{array}{r l}\rRule{\top_F}{}{\top\ prop}&\rRule{\top_I}{}{\top\ true}\end{array}\]
+On a pas d'élimination car on ne peut rien sortir du vrai.
+
+Le vrai correspond aussi au cas limite d'une conjonction vide.
+\subsubsection{L'implication}
+On a la formation 
+\[\rRule{\Rightarrow_F}{A\ prop\ \ \ B\ prop}{A\Rightarrow B\ prop}\]
+On a l'introduction : 
+\[\rRule{\Rightarrow_I}{\Delta,A\vdash B}{\Delta\vdash A\Rightarrow B}\]
+On a l'élimination :
+\[\rRule{\Rightarrow_E}{A\Rightarrow B\ true\ \ \ A\ true}{B\ true}\]
+On a cependant aussi une particularité, la règle suivante est admissible (on peut la dérivée de la règle d’affaiblissement):
+\[\rRule{?}{\Delta\vdash A\Rightarrow B}{\Delta,A\vdash B}\]
+C'est exactement l'inverse de l'introduction. Cette règle est \underline{inversible}.
+
+\subsubsection{Le faux $\bot$}
+On a formation :
+\[\rRule{\bot_F}{}{\bot\ prop}\]
+
+On a cependant pas l'introduction, on ne veux pas dire que faux et vrai trivialement.
+On a cependant l'élimination, faux prouve tout :
+\[\rRule{\bot_E}{\bot\ true}{A\ true}\]
+
+Le vrai correspond aussi au cas limite d'une conjonction vide.
+
+\subsubsection{La négation}
+On rejette le tiers-exclu. Pour gérer l’inconsistance on défini $\neg A\equiv A\Rightarrow\bot$. Alors :
+\[\rRule{\Rightarrow_E}{A\ true\ \ \ \neg A\ true}{\bot}\]
+On renégocie donc l'usage du faux.
+
+\subsubsection{Disjonction}
+On a la formation
+\[\rRule{\vee_F}{A\ prop\ \ \ B\ prop}{A\vee B\ prop}\]
+On a l'introduction
+\[\begin{array}{r l}\rRule{\vee_{Ig}}{A\ true}{A\vee B\ true}&\rRule{\vee_{Ig}}{B\ true}{A\vee B\ true}\end{array}\]
+On a l'élimination
+\[\rRule{\vee_E}{A\vee B\ true\ \ \ A\ true\vdash C\ true\ \ \ B\ true\vdash C\ true}{C\ true}\]
+
+\subsection{Types}
+Une proposition set abstraite en un \underline{type}, élément de l'algèbre suivante :\[T::=X\in\X|T\rightarrow T|...\] avec $\X$ un ensemble dénombrables de variables.
+
+Pour un $\lambda$-terme, t on va le mettre en relation avec un type $T$, une relation binaire $t:T$ avec signification $T\ true$. Alors $t$ sera un \underline{temoin}. On pourra aussi voir les types comme des ensembles, ils seront vrais s'ils sont habités (non vides). Alors $T_1\ true,...,T_n\ true\vdash T\ true$ donnera $t_1:T_1,...,t_n:T_n\vdash t:T$. On aura alors :
+\[\begin{array}{r c l}\rRule{Hyp}{x:T\in\Delta}{\Delta\vdash x:T}&\rRule{\rightarrow_I}{\Delta,x:S\vdash t:T}{\Delta\vdash \lambda x.t:S\rightarrow T}&
+\rRule{\rightarrow_E}{\Delta\vdash t:S\rightarrow T\ \ \ \Delta \vdash s:S}{\Delta\vdash (t\ s):T}
+\end{array}\]
+
+On se pose alors la question du type de $\lambda x.x$, $\lambda xy.x$, $\lambda xy.y$, $\lambda x.x\ x$.
+
+\Ex{(Exercice)}{}{Montrer qu'il existe $S$ tel que pour tout $X,Y,Z\in\X$, $\vdash S:(X\rightarrow Y\rightarrow Z)\rightarrow (X\rightarrow Y)\rightarrow (X\rightarrow Z)$.} 
+
 \end{document}
