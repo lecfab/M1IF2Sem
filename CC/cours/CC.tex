@@ -338,13 +338,14 @@ But TAUTOLOGY $\in$ coNP.\\
 \end{claim}
 \Proof{L $\in$ NP $\implies \exists$ p(n), M polytime on input x.\\
 	New TM M' :
+	
 	\begin{enumerate}
 		\item u $\in \{0,1\}^{p(|x|)}$
-		\item For each u, run M on (x,u), if accepts $\implies$ accpet
+		\item For each u, run M on (x,u), if accepts $\implies$ accept
 		\item At the end, reject
 	\end{enumerate}
 
-	M' runs in time 2$^{\text{poly}(n)}$ and M'(x) accpets $\Longleftrightarrow \exists u \in \{0,1\}^{p(|x|)}:M(x,u) = 1$}
+	M' runs in time 2$^{\text{poly}(n)}$ and M'(x) accepts $\Longleftrightarrow \exists u \in \{0,1\}^{p(|x|)}:M(x,u) = 1$}
 
 Similar argument for coNP.\\
 
@@ -360,7 +361,7 @@ P $\neq$ EXP (Time hierarchy theorem)
 	\end{itemize}}
 \Proof{Diagonalization
 	
-	Define the machine V: input($\alpha$,x) n = |($\alpha$,x)|
+	Define the machine V: input($\alpha$,x) n = $|(\alpha,x)|$
 	\begin{enumerate}
 		\item Compute g(n)
 		\item run $\mathcal{U}$($\alpha$,($\alpha$,x)) for g(n) steps
@@ -371,9 +372,127 @@ P $\neq$ EXP (Time hierarchy theorem)
 	Now want to show that no machine M such that M($\alpha$,($\alpha$,x)) = V(($\alpha$,x)) $\forall\alpha,x$ runs in time $\leq$ cf(n)
 	Let M$_{\alpha_0}$ be a machine that runs in time $\leq$ cf(n)\\
 	From the universal TM theorem, there is a constant C$_{\alpha_0}$ such that for all y\\
-	$\mathcal{U}(\alpha_0,y)$ stops after C$_{\alpha_0}$(1+cf($|y|$)log(f(|y|))
-	If |y| is large enough, $\leq$ g(|y|)
-	Set y = ($\alpha_0$,x). So $\mathcal{U}$ on imput ($\alpha_0$,($\alpha_0$,x)) stops after $\leq$ g(|($\alpha_0$,x)|) for large enough |x|
+	$\mathcal{U}(\alpha_0,y)$ stops after C$_{\alpha_0}$(1+cf($|y|$)log(f($|y|$))
+	If $|y|$ is large enough, $\leq$ g($|y|$)
+	Set y = ($\alpha_0$,x). So $\mathcal{U}$ on imput ($\alpha_0$,($\alpha_0$,x)) stops after $\leq$ g($|(\alpha_0,x)|$) for large enough $|x|$
 	V(($\alpha_0$,x)) = $\neg\mathcal{U}$($\alpha_0$,($\alpha_0$,x)) = $\neg$M$_{\alpha_0}$($\alpha_0$,x)
 	So M$_{\alpha_0}$ cannot compute the same langage as V. $\implies$ The language computed by V is not in DTIME(f)}
+
+\subsection{SPACE Complexity}
+\Rem{Important}{}{Input tape is in read only, output tape is write only, we count the cells only used on work tapes}
+
+\Def{}{}{M works in space S(n) if it stops on all inputs x and uses $\leq$ cS($|x|$) cells of the worktapes (i.e visited by head)
+	\begin{itemize}
+		\item SPACE(S(n))
+		\item DSPACE(S(n))
+	\end{itemize}
+	 is the set of languages decided by a TM in space S(n)}
+
+\Def{}{}{L = DSPACE(log n)\\
+	PSPACE = $\bigcup\limits_{c>0}$DSPACE$(n^c$)}
+
+\Ex{}{}{~\\\begin{itemize}
+		\item Can add two numbers in logspace
+		\item SAT $\in$ PSPACE, so NP $\subseteq$ PSPACE
+	\end{itemize}}
+	
+\Def{}{}{NSPACE(S(n)) is the set of languages decided by a non det TM in space S(n)}
+
+\Def{}{}{NL = NSPACE(log n)\\
+	NPSPACE = $\bigcup\limits_{c>0}$NSPACE$(n^c$)\\
+	L $\subseteq$ NL, PSPACE $\subseteq$ NPSPACE}
+
+\Thm{Space hierarchy theorem}{}{If f and g are space constructible (on input 1$^n$, compute 1$^{S(n)}$ in space O(S(n)) and f = o(g)\\
+DSPACE(f(n)) $\subseteq$ DSPACE(g(n))}
+
+Comparaison with time classes:\\
+Trivial : DTIME(f) $\subseteq$ DSPACE(f), NTIME(f) $\subseteq$ NSPACE(f)\\
+
+Useful concept: configuration graph of M (or N) on input x\\
+
+Configuration of N (or M):\begin{itemize}
+	\item state
+	\item position of head on input and work tapes
+	\item contents of \textbf{work} tapes
+\end{itemize}
+
+Config graph of N on input x is a directed graph\\
+Vertices = configurations (a priori infinite but we'll put a bound depends on $|x|$)\\
+Edges := $c_1 \rightarrow c_2$ if this transition can happen during the computation of N on x.\\
+
+\Rem{}{}{Configuration + input:\begin{itemize}
+		\item deterministic TM $\implies$ one outgoing edge
+		\item NDTM $\implies$ two outgoing edge
+	\end{itemize}}
+	
+\begin{claim}
+	If a TM N works in space S(n) $\geq$ log n, the configuration graph of N on input x has at most $2^{cS(|x|)}$ vertices for constant c.
+\end{claim}
+
+\Proof{\#config: $|Q|.|x|.(cS(|x|)^{k-1}.|\Gamma|^{cS(|x|)(k-1)}) \leq 2^{cS(|x|)}$}
+	
+\Thm{}{}{For any S(n), with S(n) $\geq$ log n, NSPACE(S(n)) $\subseteq$ DTIME($2^{O(S(n))})$\\
+	For any A $\in$ NSPACE(S(n)), there exists a constant c such that A $\in$ DTIME($2^{c(S(n))}$)}
+
+\Proof{A decided by N $\rightarrow$ configuration graph G$_{N,x}$ with $\leq 2^{cS(n)}$ vertices\\
+	M constructs $G_{N,x}$ explicitly\\
+	N(x) accepts iff there is a path in $G_{N,x}$ from initial config and ends in accepting config.\\
+	M performs BFS to look for this path.}
+
+\Ex{}{}{Show that NTIME(T(n)) $\subseteq$ DPSACE(T(n)) }
+
+\subsection{Complete problem}
+\Def{}{}{A language B is PSPACE-hard if for any A$\in$ PSPACE, $A \leq_p B$ PSPACE-complete if B $\in$ PSPACE}
+$\rightarrow$ Generalization of SAT
+\Def{}{}{A quantified boolean formula (QBF) is of the form: $Q_1x_1Q_2x_2...Q_nx_n\varphi(x_1,...,x_n$)\\
+$Q_i \in \{\forall,\exists\}$ $\varphi$ formula, $x_i \in \{0,1\}$}
+Language TQBF is the set of QBF that evaluate to true
+
+\Ex{}{}{$\exists x_1\exists x_2\exists x_n \varphi(x_1,...,x_n) \leftrightarrow \varphi$ satisfiable\\
+	$\forall x_1,\forall x_2,...\forall x_n, \varphi(x_1,...,x_n) \leftrightarrow \varphi$ tautology\\
+	
+	If $\exists\forall\exists\forall$ captures existence of winning strategy in a two player game (??)}
+
+\Thm{}{}{TQBF is PSPACE-complete}
+\Proof{~\\
+\begin{itemize}
+		\item TQBF $\in$ PSPACE
+		\begin{itemize}
+		\item QBF-rec ($\Psi$)
+		\begin{itemize}
+			\item If $\Psi$ has no quantifier, accept if $\Psi$ true
+			\item If $\Psi = \exists x \Psi'(x)$ return QBF-rec($\Psi'(0))\vee$QBF-rec$(\Psi'(1))$
+			\item If $\Psi = \forall x \Psi'(x)$ return QBF-rec($\Psi'(0))\wedge$QBF-rec$(\Psi'(1))$
+		\end{itemize}
+		\item Key point: can re-use space can keep only the answer of QBF-rec($\Psi'(0)$)
+		
+		Space used:
+		\begin{itemize}
+			\item If $\Psi$ has no quantifiers: Space used = $O(\Psi)$
+			\item If $\Psi$ has a quantifier : have to keep $\Psi$ Space($\Psi$) = O($|\Psi|$) + max(space($\Psi'(0)$),space($\Psi'(1)$))
+		\end{itemize}
+
+		We have at most $|\Psi|$ recursive calls Space($\Psi$) = O($|\Psi|^2$)\\
+
+		So TQBF $\in$ PSPACE\\
+	\end{itemize}
+
+\item TQBF is PSPACE-hard\\
+A $\in$ PSPACE M decides A in space S(n)\\
+Objective: A$\leq_p$TQBF\\
+x $\mapsto \Psi_x$\\
+Use configuration graph G$_{M,x}$
+M accepts $\leftrightarrow$ there exists a path in G$_{M,x}$ from c$_0$ to accepting config
+\end{itemize}
+
+\Rem{}{}{\#vertices in G$_{M,x}$ is $2^{O(S(n))} \rightarrow$ cannot have a variable for each vertex}
+	
+Variable in formula:
+	Configuration variable = a set of variables, an assignment corresponds to a config
+	\begin{itemize}
+		\item $e_q \in \{0,1\}$ is state of machine q ?
+		\item is head at position i on tape r ?
+		\item $c_i^r$ value of tape r at postion i ? (alaphbet for work tape is \{0,1\})
+	\end{itemize}
+\dots}
 \end{document}
