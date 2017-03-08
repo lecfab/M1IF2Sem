@@ -1,0 +1,412 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{claim}{Claim}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{example}{Example}
+
+\newcommand{\Thm}[3]{\begin{theorem}[#1]\label{#2}#3\end{theorem}}
+\newcommand{\Ex}[3]{\begin{example}[#1]\label{#2}#3\end{example}}
+\newcommand{\Def}[3]{\begin{definition}[#1]\label{#2}#3\end{definition}}
+\newcommand{\Lem}[3]{\begin{lemma}[#1]\label{#2}#3\end{lemma}}
+\newcommand{\Cor}[3]{\begin{corollary}[#1]\label{#2}#3\end{corollary}}
+\newcommand{\Prop}[3]{\begin{proposition}[#1]\label{#2}#3\end{proposition}}
+\newcommand{\Rem}[3]{\begin{remark}[#1]\label{#2}#3\end{remark}}
+\newcommand{\Proof}[1]{\begin{proof}#1\end{proof}}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\X}{\mathcal{X}}
+
+
+\begin{document}
+	
+\title{Computer Algebra}
+\author{Guillaume}
+
+\maketitle
+\tableofcontents
+
+...(course 1)
+
+Karatsuba multiplication : $O(n^{1.59\dots})$
+
+$(a_1X+a_0)(b_1X+b_0) = a_1b_1X^2 + a_0b_0 + ((a_1+a_0)(b_1+b_0) - a_1b_1 - a_0b_0)X$
+
+\begin{itemize}
+	\item $a_0$ can be seen as A(0)
+	\item $a_0 + a_1$ as A(1)
+	\item $a_1$ as A($\infty$)
+\end{itemize}
+So, $A(X)\times B(X)$ is characterized by its value at 3 points: 0,1,$\infty$.
+
+We can find plenty of such formula with 0,1,-1.
+
+If $A.B = c_2X^2+c_1X+c_0$,
+
+$c_0 = a_0b_0$, $c_1=\frac{1}{2}(A.B(1) - A.B(-1))$, $c_2 = \frac{1}{2}(A.B(1)+A.B(-1)) - A.B(0)$
+
+\subsection{Tom-Cook method}
+Let A(X),B(X) have degree r.
+In order to compute A(X).B(X) using evaluation interpolation, I need to do :
+\begin{itemize}
+	\item 2r-1 evaluations
+	\item 2r-1 pointwise products
+	\item interpolation in degree 2r-1
+\end{itemize}
+
+As in Karatsuba's method, we use this idea on polynomials of degree n$>>$r, say P,Q:
+
+Put:
+
+$\tilde{P}(X,T)= \sum_{i=0}^{r} P_i(X)T^i$\\
+$\tilde{Q}(X,T) = \sum_{i=0}^{r} Q_i(X)T^i$
+
+with $\tilde{P}(X,X^{\frac{n}{r}}) = P(X)$\\
+$\tilde{Q}(X,X^{\frac{n}{r}}) = Q(X)$
+
+$\deg_T \tilde{P}(X,T) \leq r$
+$\deg_T \tilde{Q}(X,T) \leq r$
+\subparagraph{}
+Cost of evaluation-interpolation ?
+\begin{itemize}
+	\item evaluation : O(r) times O(r) additions of poly's of degree $\frac{n}{r}$ = O(rn)
+	\item pointwise products : 2r+1 multiplies of polynomials of degree $\frac{n}{r}$
+	\item interpolation : O(n.poly(r))
+\end{itemize}
+
+Overall, if TC$_r$(n) stands for the cost of multiplication, and assuming we use recursion for the pointwise products, we get :
+$\text{TC}_r(n) = (2r+1)\text{TC}_r(\frac{n}{r})+O(n.\text{poly}(r))$
+
+(For r=1 we get Karatsuba)
+
+For fixed r, we get
+
+$\text{TC}_r(n) = O(n^{\frac{\log(2r+1)}{\log r}})$
+
+($n=r^j$, $\text{TC}_r=(2r+1)\text{TC}_r(r^{j-1})+\dots$
+
+TC$_c(n) = (2r+1)^{\log_{r}n}$
+
+Maybe r should be replaced by r+1.
+
+Tempting to let r$\rightarrow\infty$ to get O(n$^{1+\epsilon}$)
+
+It can be done but requires some care so that evaluation \& interpolation step remain negligible - one needs to keep r = n$^{o(1)}$, e.g. r = exp($\sqrt{\log n}$)
+
+In practice: used for r = 3(,4), then FFT becomes better.
+
+\subsection{FFT}
+Key idea: Using a suitable set of points (namely roots of 1) yieldss a very fast evalution/interpolation
+
+In the sequel, we'll assume that
+$\deg P < r = 2^k$ (so k = $\lceil \log_2(\deg P + 1)\rceil$ and the base field contains all r-th roots of unity. We let $\omega$ be a primitive such roots (so that {r-th roots of 1} = {$\omega^j$, $0\leq j \leq r-1$})
+
+Identification :
+$P(X) = \sum_{j=0}^{r-1} p_j X^j \longleftrightarrow P = (p_0,\dots,p_{r-1})$
+
+Define the Discrete Fourrier Transform fo size r to be
+
+$\text{DFT}_{w,r}(P) = (P(\omega^0),\dots,P(\omega^{r-1})$
+
+\begin{lemma}
+	DFT$_{w,r}(P) \odot \text{DFT}_{w,r}(Q) = \text{DFT}_{w,r}(PQ)$
+	
+	where $\odot$ is coordinatewise product of vectors
+\end{lemma}
+
+\begin{proof}
+	Follows from the definition
+\end{proof}
+
+\begin{lemma}
+	DFT$_{w^{-1},r}(\text{DFT}_{w,r}(P)) = rP$
+	
+	So DFT$^{-1}_{w,r} = \frac{1}{r}\text{DFT}_{w^{-1},r}$
+\end{lemma}
+\begin{proof}
+	Let $Q(X) = \text{DFT}_{w,r}(P)$ seen as a polynomial $= \sum_{i=0}^{r-1} P(\omega^i)X^i$
+	\begin{equation*}
+		=\sum_{i=0}^{r-1}\sum_{j=0}^{r-1} p_j \omega^{ij} X^i	
+	\end{equation*}
+	\begin{align*}
+	\text{DFT}_{w^{-1},r}(Q)\mid_l & =  Q(\omega^{-l})\\
+	& = \sum_{i=0}^{r-1}\sum_{j=0}^{r-1} p_j \omega^{ij} \omega^{-il}\\
+	& = \sum_{j=0}^{r-1}p_j \sum_{i=0}^{r-1}\omega^{i(j-l)}
+	\end{align*}
+\end{proof}
+\begin{claim}
+	If $\alpha^r = 1$, then $\sum_{i = 0}^{r - 1}\alpha^i = $ r if $\alpha = 1$, and 0 otherwise
+\end{claim}
+Indeed, if $\alpha = 1$, it is a clear fact; otherwise let $\sigma$ stand for the sum :
+
+Then 
+\begin{align*}
+\alpha S & = \sum_{i=0}^{r-1} \alpha^{i+1}\\
+& = \sum_{i=1}^{r} \alpha^{i}\\
+& = \sum_{i=1}^{r-1} \alpha^{i} + \alpha^r = S
+\end{align*}
+Thus $(\alpha-1)S = 0$ and $\alpha \neq 1 \implies S=0$
+
+Hence $\sum_{i=0}^{r-1} \omega^{i(j-l)} = $ r if $\omega^{j-l} = 1 \Leftrightarrow j \equiv l$ (mod r), and 0 otherwise
+
+as $0\leq j,l \leq r$
+
+$j \equiv l $(mod r) $\Leftrightarrow j = l$
+(End of proof)
+
+Bottomline : if we have a fast algorithm for DFT, we have a fast algorithm for DFT$^{-1}$
+
+\begin{theorem}
+	DFT$_{w,r}$(P) can be computed in time O(r log r) operations in the base field
+\end{theorem}
+\begin{proof}
+	Split P as $P(X) = P_{\text{even}}(X^2) + X P_{\text{odd}}(X^2)$
+	
+	Then
+	\begin{align*}
+	\text{DFT}_{\omega,r}(P)\mid_l & =  P_{\text{even}}(\omega^{2l}) + \omega{l} P_{\text{odd}}(\omega^{2l})\\
+	& = (\text{DFT}_{\omega^2,\frac{r}{2}}(P_{\text{even}}) + \text{DFT}_{\omega^2,\frac{r}{2}}(P_{\text{odd}}) \odot \text{DFT}_{\omega^2,\frac{r}{2}}(X))\\
+	& \parallel  (\text{DFT}_{\omega^2,\frac{r}{2}}(P_{\text{even}}) - \text{DFT}_{\omega^2,\frac{r}{2}}(P_{\text{odd}}) \odot \text{DFT}_{\omega^2,\frac{r}{2}}(X))
+	\end{align*}
+	(The concatenation is possible because $\omega^{r+l} = \omega^l$ and the $-$ comes from $\omega^{\frac{r}{2}} = -1$)
+\end{proof}
+
+Algorithm : FFT($\omega$,r,P)\\
+If r == 1, return (P(1))\\
+D$_1$ = FFT($\omega^2,\frac{r}{2},P_{\text{even}}$)\\
+D$_2$ = FFT($\omega^2,\frac{r}{2},P_{\text{odd}}$)\\
+For i from 0 to r-1 do:
+
+
+	D$_2\mid_i$ = D$_2\mid_i \times \omega^i$\\
+Return $D_1 + D_2 \parallel D_1 - D_2$
+
+\subparagraph{}
+Say F(r) is the cost of the algorithm on $\omega$,r,P
+Then $F(r) = 2F(\frac{r}{2}) + O(r) + O(r)$ (first is the loop, second if the sum/difference)
+
+So F(r) = O(r log r).
+
+\subparagraph{Multiplication algorithm}
+Let P,Q have degree < $\frac{r}{2} = 2^{k-1}$
+\begin{enumerate}
+	\item Compute $D_P = \text{DFT}_{\omega,r}(P)$, $D_Q = \text{DFT}_{\omega,r}(Q)$
+	\item $D = D_P \odot D_Q$
+	\item Return $\text{DFT}_{\omega{-1},r}(D)$
+\end{enumerate}
+Cost O(r log r)
+
+Correctness : follows from the 2 lemmas + deg(PQ) < r
+
+Cost : 3 DFTs of size r + O(r) for the componentwise products
+
+\subparagraph{Application}
+\begin{itemize}
+	\item Polynomial product over $\mathbb{K}$[X] have to choose a suitable base field.
+	Most common :
+	$\mathbb{K} \subseteq \mathbb{C}$ or $\subseteq \mathbb{Z}/p\mathbb{Z}$ where $p \equiv 1$ mod r
+	\item Integer multiplication much more difficult
+	
+	Schönehage-Strassen achieve O(n log n log log n)
+	Fürer (2000's) achieved O(n log n $2 ^{\log_* n})$
+\end{itemize}
+\subparagraph{Open question}
+	Is it possible to multiply 2 polynomials faster than n log n ?
+\subparagraph{Summary}
+Summary\\
+Poly | int\\
+$n^2$ |  " (naive)\\
+$n^{1.59}$ | " (Karatsuba)\\
+$n^{\frac{\log(2r+1)}{log(r+1)}}$ | " (TC$_r$)\\
+$n \log n$ | $ \log n \log \log n$ (FFT)\\
+
+\subparagraph{}
+In the sequel we'll assume M(n) increasing and superlinear ($M(\sum n_i) \geq \sum M(n_i)$)
+
+\section{Interlude: Hensel's lemma/Newton method}
+Newton method :
+f(X) = 0, f sufficiently regular\\
+Tangent at $x_i$ : $y - f(x_i) = f'(x_i)(x-x_i)$
+most of the time it works fine, and if $x_0$ is a "good guess"
+$x_{i+1} - \alpha \approx (x_i - \alpha)^2$ meaning that the number of correct digits doubles at each step : $|x_n - \alpha| \approx c^{2^n}, c < 1$
+
+\Thm{Hensel Lemma}{}{Let $F \in \K[X,Y]$ (We want to solve $F(X,P(X))=0 \mod X^N$ for some $P \in \K[X]$)\\
+	Assume that $F(0,s_0) = 0$ and $\frac{\partial F}{\partial Y}(0,s_0)\neq 0$\\
+	Then $\forall n, \exists!S_n$ of degree $ < 2^n$ s.t\\
+	$S_n(0)=S_0$ and $F(X,S_n(X))=0 \mod X^{2^n}$\\defined by $S_0 = s_0, S_{n+1} = S_n - \frac{F(X,S_n(X))}{\frac{\partial F}{\partial Y}(X,S_n(X))}$}
+\Proof{By induction\\Assune $S_n$ is known + unique.
+If for some $S_{n+1}$, $F(X,S_{n+1}(X)) = O(\mod X^{2^{n+1}})$\\
+Then a fortiori, $F(X,S_n(X) \mod X^{2^{n+1}}) = O(\mod X^{2^n})$\\
+By uniqueness of $S_n$, $S_{n+1} \equiv S_n \mod X^{2^{n}}$\\
+Hence, $S_{n+1} = S_n + X^{2^{n}} T_n$ for some $T_n$\\
+\begin{align*}
+F(X,S_{n+1}(X)) & = F(X,S_n(X)) + (S_{n+1}(X)-S_n(X))\cdot\frac{\partial F}{\partial Y}(X,S_n(X))\\ & + (S_{n+1}(X) - S_n(X)^2(\equiv O(\mod X^{2^{n+1}}) \cdot[\star] (\in \K[X])
+\end{align*}
+Modulo $X^{2^{n+1}}$, we get\\
+$(S_{n+1} - S_n)\cdot\frac{\partial F}{\partial Y}(X,S_n(X)) = -F(X,S_n(X)) 
+\mod X^{2^{n+1}}$\\
+Now $\frac{\partial F}{\partial Y}(X,S_n(X))|_0 = \frac{\partial F}{\partial Y}(0,s_0) \neq 0$ by assumption;\\
+So $\frac{\partial F}{\partial Y}(X,S_n(X))$ coprime with X, hence invertible mod $X^{2^{n+1}}$\\
+so $S_{n+1} = S_n - \frac{F(X,S_n(X))}{\frac{\partial F}{\partial Y}(X,S_n(X))} \mod X^{2^{n+1}}$}
+
+\Rem{}{}{\begin{itemize}
+		\item This is the so-called quadratic version of Hensel lemma
+		\item There is a linear version, replacing $S_n$ by $T_n$ and $X^{2^{n}}$ by $X^n$ everywhere - works exactly the same
+		\item In practice Hensel's lemma is often used recursively
+		\item Recursive call $F(X,\tilde{S}(X)) = 0 \mod X^{\lceil N/2 \rceil}$ + do $S = \tilde{S} - \frac{F(X,\tilde{S}(X))}{\frac{\partial F}{\partial Y}(X,\tilde{S}(X))} \mod X^{N}$
+	\end{itemize}}
+Complexity "meta-analysis" with F having O(1) degree\\
+$H(N) = H(N/2) + O(M(N))\text{(F and derivate)} + O(D(N))\text{(division)}$\\
+($O(D(N)) = O(M(N))$)\\
+So \begin{align*}
+H(N) & = H(N/2) + O(M(N))\\
+& = O(M(N)) + O(M(N/2)) + O(M(N/4)) + ... + O(M(N/2^k)) (2^k \approx N)\\
+& \leq O(M(N+N/2+N/4+\dots+N/2^k))\\
+& \leq O(M(2N)) = O(M(N))
+\end{align*}
+
+Inversion : $P^{-1} \mod X^{2^n}$ ?\\
+\begin{align*}
+S_{n+1} & = S_n - \frac{P(X)S_n - 1}{P(X)} \mod X^{2^n}\\
+& = 1/P(X) \mod X^{2^n}\\
+& = S_n - \frac{1/S_n(X) - P(X)}{-1/S_n(X)} \mod X^{2^{n+1}}\\
+& = S_n + S_n(1 - S_n(X)P(X)) \mod X^{2^{n+1}}\\
+\end{align*}
+\begin{claim}
+	$PS_n \equiv 1 \mod X^{2^n}$
+\end{claim}
+Recurvsive version. Say $\tilde{S}$ s.t $P\tilde{S} = 1 \mod X^{\lceil N/2 \rceil}$\\
+then $S = \tilde{S} + \tilde{S}(1 - P\tilde{S}) \mod X^{N}$ is s.t $PS \equiv 1 \mod X^N$\\$I(N) = I(N/2) + 2M(N/2) + O(N) \rightarrow I(N) = O(M(N))$\\
+Hence division mod $X^N$ costs $I(N)+M(N) = O(M(N))$\\
+
+Normal,Euclidian division\\
+Let $A,B \in \K[X]$ + say we look for $Q,R$ with $A = BQ + R, \deg R < \deg B$\\
+If P polynomial, define $P^{\#}(X):=X^{\deg P}\cdot P(1/X)$
+
+\begin{claim}
+	$Q^\# = \frac{A^\#}{B^\#} \mod X^{\deg Q + 1}$
+\end{claim}
+\Proof{\begin{align*}
+	A(\frac{1}{X}) & = B(\frac{1}{X})Q(\frac{1}{X}) + R(\frac{1}{X})\\
+	X^{\deg A} A(\frac{1}{X}) & = (X^{\deg B} B(\frac{1}{X}))\cdot(X^{\deg A - \deg B}Q(\frac{1}{X})) + X^{\deg A} R(\frac{1}{X})\\
+	A^\# & = B^\# Q^\# + X^{\deg A - \deg R}R^\#\\
+	& \deg A \deg R > \deg A - \deg B = \deg Q\\
+	& \text{so } X^{\deg A - \deg R} = O(\mod X^{\deg Q + 1})\\
+	\end{align*}
+	+ note by def that $B^\#(0) \neq 0$}
+
+Overall, Euclidian division(A,B):\\
+Compute $T = \frac{A^\#}{B^\#} \mod X^{\deg A - \deg B + 1}$\\
+Return $T^\#, R = A-BT^\#$\\
+
+Cost if $\deg A = 2N$, $\deg B = N \rightarrow O(M(N))$\\
+
+Comment\\
+There is another version of fast division: By considering $A_{high}$ and $A_{low}$ with cost $\tilde{D}(n) = 2\tilde{D}(n/2) + O(M(N))\\
+\tilde{D}(n) = O(M(n))$ if $M(n)\approx n^\alpha, \alpha > 1\\
+\tilde{D}(n) = O(M(n)\log n) if M(n) \approx n\log^\beta n$\\
+
+In practice,\begin{itemize}
+	\item in the quasi-linear range, Hensel based is better
+	\item in the $n^\alpha$ range, the constant in "recursive division" makes it slightly better.
+\end{itemize}
+
+\subsection{Square root}
+$F(X,Y) = Y^2 - P(X)$\\
+If $\tilde{S}$ is s.t $\tilde{S}(X)^2 \equiv P \mod X^{\lceil N/2 \rceil}$, then \begin{align*}
+S & = \tilde{S} - \frac{\tilde{S}^2 - P(X)}{2 \tilde{S}} \mod X^{2^{n+1}} (X_{n+1} = 1/2(X_n + a/X_n))\\
+& = 1/2(\tilde{S} +  P(X)/\tilde{S}) \mod X^{2^{n+1}}
+\end{align*}
+
+Cost $S(N) = S(\lceil N/2 \rceil) + O(D(N)) + O(N)$\\
+$\implies S(N) = O(M(N))$
+
+\Rem{}{}{Slightly faster in practice to compute $\bar{S}\\
+	\bar{S}^2 = 1/P \mod X^{2^n}$ using $F(X,Y) = 1/Y^2 - \bar{S}(X)$\\
+	return $S = P\bar{S}$ (as "$\bar{S} = 1/\sqrt{P}", "S=\sqrt{P}$)\\}
+
+Base change:\\
+$P(X) = \sum_{i=0}^{N-1} p_iX^i$\\
+B(X) of degree deg B\\
+Want to find $b_0,b_1,...,b_r \in \K[X], \deg b_i < \deg B$ s.t $P(X) = \sum_i b_i(X)B(X)^i$\\
+Naive version:
+$i \gets 0$\\
+While deg $P \neq 0$ do\\
+$b_i \gets P \mod B\\
+P \gets \frac{P-b_i}{B}\\
+i \gets i+1$\\
+End\\
+
+Complexity : $\frac{deg P}{deg B}$ steps $(\deg P)(\deg B) = (\deg P)^2$\\
+
+Right version:\\
+$P_l = P \mod B^{1/2*\lfloor\frac{\deg P}{\deg B}\rfloor}\\
+P_l = \frac{P - B_l}{B^{1/2\lfloor\frac{\deg P}{\deg Q}\rfloor}}\\$
+Return basechange($P_h,B)||$basechange($P_l,B$)
+
+BC(N) = 2BC(N/2) + D(N) + 2(N)\\
+Cost of $B^l$ = C(l)
+By fast exponentiation, $C(l) \leq O(M(2l\deg B)) = O(M(l\deg B))$
+
+\section{GCD, extended GCD, Chinese remainder theorem}
+Over a ring R = $\Z$ or $\K[X]$
+\subsection{Euclidean algorithm}
+Input: a,b\\
+Output a gcd of a,b\\
+(b==0)?a:gcd(b,Remainder(a,b))
+
+\Proof{Loop invariant: gcd(a,b) does not change}
+
+\subsection{Analysis}
+\subsubsection{Number of steps}
+$\parallel x \parallel := \log_2(1+|x|),x\in\Z\\
+ \deg x + 1, x\in\K[X]$
+
+\Prop{}{}{The number of steps in Euclid's algorithm is O(1 + min($\parallel a \parallel,\parallel b \parallel) - \parallel gcd(a,b)\parallel)$}
+\Proof{Common step to R=$\Z \& \K[X]$\\
+	Step 1: divide a by b, then we are reduced to a gcd(a',b') with $\parallel a' \parallel,\parallel b' \parallel \leq$ min($\parallel a' \parallel,\parallel b' \parallel)$\\
+	R = $\K[X]$\\
+	At every step, deg r$_i$ decreases by at least 1\\
+	Goes from min($\parallel a \parallel,\parallel b \parallel$) to $\parallel gcd(a,b)\parallel$\\
+	R = $\Z$\\
+	\begin{claim}[Lamé]
+		After the beginning and as long as a,b$\neq$ 0, in two steps max(a,b) decreases at least by a factor of 2.
+	\end{claim}
+	\Proof{$r_k = q_k*r_{k+1}+r_{k+2}\\
+		r_{k+1} = q_{k+1}*r{k+2}+r_{k+3}$\\
+		If $r_{k+1} \leq r_k/2$\\
+		then $r_k$ = max($r_k,r_{k+1}) \leq 1/2$ max($r_{k+2},r_{k+1})$ = $r_{k+1}$\\
+		Same for $r_{k+1} \geq r_k/2$\\
+		$r_{k+2} \leq r_k - r_{k+1}$ as q$_k \geq 1$\\}
+	Goes from min($\parallel a \parallel,\parallel b \parallel$) to $\parallel gcd(a,b)\parallel$ 2 steps by 2 steps
+}
+
+\Rem{}{}{This bound is sharp for consecutive Fibonacci number}
+
+\subsubsection{Bitcomplexity}
+\Thm{?}{}{Let A = max($\parallel a \parallel,\parallel b \parallel$), B = min($\parallel a \parallel,\parallel b \parallel$), D = $\parallel gcd(a,b)\parallel$\\
+	The overall complexity of Euclidean algorithm is O((B+1)(A-D+1))}
+\end{document}

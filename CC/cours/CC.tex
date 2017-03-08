@@ -1,0 +1,379 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{wasysym}
+
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{claim}{Claim}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{example}{Example}
+
+\newcommand{\Thm}[3]{\begin{theorem}[#1]\label{#2}#3\end{theorem}}
+\newcommand{\Ex}[3]{\begin{example}[#1]\label{#2}#3\end{example}}
+\newcommand{\Def}[3]{\begin{definition}[#1]\label{#2}#3\end{definition}}
+\newcommand{\Lem}[3]{\begin{lemma}[#1]\label{#2}#3\end{lemma}}
+\newcommand{\Cor}[3]{\begin{corollary}[#1]\label{#2}#3\end{corollary}}
+\newcommand{\Prop}[3]{\begin{proposition}[#1]\label{#2}#3\end{proposition}}
+\newcommand{\Rem}[3]{\begin{remark}[#1]\label{#2}#3\end{remark}}
+\newcommand{\Proof}[1]{\begin{proof}#1\end{proof}}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\X}{\mathcal{X}}
+
+\newcommand{\hsp}{\hspace{20pt}}
+
+
+\begin{document}
+	
+\title{Computational Complexity}
+\author{Omar Fawzi}
+
+\maketitle
+\tableofcontents
+
+\section{Basic Questions}
+\begin{itemize}
+	\item Efficient verification vs Efficient computation (NP vs P)
+	\item Power of randomness = P vs BPP
+	\item Power of quantum systems = P vs BQP 
+\end{itemize}
+
+\subsection{Example frontier}
+Circuit with AND, OR, NOT gates 
+	MOD$_6$
+	with CONSTANT depth and polynomial size
+	
+Show that SAT cannot be computed by such circuits
+
+\underline{Algorithm:} Modeled by a Turing Machine (TM)
+
+$M$ computes $f:\{0,1\}^* \rightarrow \{0,1\}^*$\\\\
+Only one output tape\\
+Run the machine $M$:\\
+Apply transition function until reach $q_{halt}$
+
+\begin{itemize}
+	\item If never reach $q_{halt}$, $f$ undefined
+	\item If reach $q_{halt}$ $f(x)$ = what it is written on the output tape
+\end{itemize}
+$M$ computes $f$ in time $T(n)$ if for all $x \in \{0,1\}^*$, $M$ on input $x$ halts after $T(|x|)$ steps\\\\
+Church Turing thesis : Intuitive notion of algorithm = Turing machine\\
+
+Important properties :
+\begin{itemize}
+	\item Turing machine can be represented by bitstrings. For $\alpha \in \{0,1\}^*$, $M_\alpha$ is the TM represented by $\alpha$
+	\item Universal TM : There exists a TM $\mathcal{U} : \mathcal{U}(x,\alpha) = M_\alpha(x)$
+\end{itemize}
+
+\subsection{Complexity classes}
+Conveniant to restrict to boolean function $f:\{0,1\}^*\rightarrow\{0,1\}$\\
+Equivalently : $L = \{x \in \{0,1\}^* : f(x)=1\}$
+
+\begin{definition}
+	$L \in$ DTIME$(T(n))$ iff there exists a constant $c \rangle 0$ and a TM $M$ such that $M$ runs in time $cT(n)$ and compute $L$.
+	
+	P$ = \cup_{l \in \mathbb{N}} $DTIME$(n^l)$
+
+\end{definition}
+
+\begin{definition}[NP]
+	$L \in$ NP if there exists $p$ polynomial and a polytime TM $M$ such that for every $x\in\{0,1\}^*$
+		$x \in L \Leftrightarrow \exists u \in \{0,1\}^{p(|x|)}$ s.t $M(x,u) = 1$
+		$u$ is called certificate, witness
+\end{definition}
+
+\subsection{Examples}
+\begin{itemize}
+	\item Any problem in P
+	\item 3-COL = Set of graphs 3-colorable\\
+	$x = \langle G\rangle$ (encoding of graph G)\\
+	$u = \langle C\rangle$ with $C:V\rightarrow{1,2,3}$ a coloring\\
+	$M$ verifies that $C$ is a valid function and that if $(v,w) \in E$, $C(v) \neq C(w)$
+\end{itemize}
+	Alternate def with nondet TM
+\begin{definition}
+	A k-tape nondeterministic TP (NDTM) is a $(\Gamma,Q,\delta)$
+	$\Gamma$ alphabet
+	Q state, $q_{start} \in Q$
+	$q_{reject}$, $q_{accept}$
+	$\delta$ can take multiple possible transitions
+		$\delta_0, \delta_1 : Q\times\Gamma^k \rightarrow Q\times\Gamma^{k-1}\times{L,S,R}^k$
+\end{definition}
+
+\begin{definition}
+	A path or execution of a NDTM is compatible with $\delta$ (at each step can choose $\delta_0$ or $\delta_1$)
+	A path us accepting is the last state is $q_{accept}$
+	An NDTM $N$ decides $L$ if $x\in L \Leftrightarrow \exists$ accepting path of $N$ on input $x$.
+	The time taken by $N$ on input $x$ is the maximum over all paths.
+	$N$ computes $L$ in $T(n)$ if for all inputs $x$, $N$ halts after $T(|x|)$ steps and $N$ decides $L$
+\end{definition}
+
+\begin{remark}
+	Can also member nondeterministic TM as $N_\alpha$
+\end{remark}
+
+\begin{definition}
+	NTIME$(T(n))$ is the set of languages $L$ s.t $\exists c \angle 0$ constant and $N$ running in time $cT(n)$ computes $L$.
+\end{definition}
+
+\begin{claim}
+	NP $= \cup_{l\in \mathbb{N}^*}$ NTIME$(n^l)$
+\end{claim}
+
+\begin{proof}
+	$L \in$ NTIME$(n^l)$. There exists $N$ with $k$ tapes that accepts $L$ in time $p(n)$.
+	Want to construct DTM $M$ that takes input $(x,u)$ $(|u|=p(|x|))$
+	$M$ has $k+1$ tapes.
+	First step : Copy $u$ into tape 2.
+	Second step $\delta(q,(\sigma_1,b,\sigma_2,...\sigma_k)) = \delta_b(q,(\sigma_1,...\sigma_k))$
+															  and for tape 2 move to the right and keep symbol $b$.
+	Final step
+		Arrive at $q_{accept} \rightarrow$ write 1 on output tape and go to $q_{halt}$
+				  $q_{reject} \rightarrow$ write 0 on output tape and go to $q_{halt}$
+	
+	If $N$ has an accepting path $\rightarrow \exists u$ s.t $M(x,u) = 1$
+	And if $M(x,u) = 1 \rightarrow$ there is an accepting path in $N$
+	For the other direction
+	NP $\subseteq \cup$ NTIME$(n^l)$
+	similar idea
+\end{proof}
+
+\subsection{Comparison between languages}
+\begin{definition}
+	$A$ problem $B$ reduces to $A$ if there is a function $f:\{0,1\}^* \rightarrow \{0,1\}^*$ computable in polytime such that $\forall x \in \{0,1\}^* : x \in B \Leftrightarrow f(x) \in A$
+This type of reduction is called Karp reduction or many-to-one and we write $B \leq_p A$
+\end{definition}
+
+Simple property : If $A \in$ NP and $B \leq_p A$, then $B \in$ NP
+	$x \in B \Leftrightarrow f(x) \in A \Leftrightarrow \exists u \in \{0,1\}^{p|f(x)|} : M(f(x),u) = 1$
+	But $|f(x)| \leq |x|^l$ for some $l$
+	
+\begin{definition}
+	$A$ is NP-hard if for any $B \in NP, B \leq_p A$
+	$A$ is NP-complete if $A$ is NP-hard and in NP
+\end{definition}
+\begin{proposition}
+	$A = \{(\alpha,x,1^t) : N_\alpha(x) \text{ accepts in time} \leq t\}$ is NP-complete
+\end{proposition}
+\begin{proof}
+	First $A \in$ NP. Simulate using a universal NDTM except stop after $t$ steps.
+	Let $B \in$ NP. There exists $\alpha_0$ such that $N_{\alpha_0}$ decides $B$ in time $p(n)$
+	Reduction : $f(x) = (\alpha_0,x,1^{p(|x|)})$
+	we have $x \in B \Leftrightarrow f(x) \in A$
+\end{proof}
+
+\section{A natural NR complete problem : SAT}
+\begin{definition}
+	Boolean formula $\varphi$,
+	a variable $x_i$
+	If $\varphi_1(x_1,...,x_n), \varphi_2(x_1,...,x_n)$ formulas
+	$\varphi_1(x_1,...,x_n) \wedge \varphi_2(x_1,...,x_n)$,
+	$\varphi_1(x_1,...,x_n) \vee \varphi_2(x_1,...,x_n)$,
+	$\neg \varphi_1(x_1,...,x_n)$ are formulas
+	
+	A formula $\varphi$ is satisfiable  if there exists $a_1...a_r$
+	
+	...(blank)...
+	
+	SAT $ = \{\langle\varphi\rangle : \varphi \text{ satisfiable formula}\}$
+\end{definition}
+
+\begin{theorem}[Cook-Levin]
+	SAT is NP-complete
+\end{theorem}
+\begin{proof}
+	$SAT \in$ NP is easy (certificate is the assignment)\\
+	SAT is NP-hard\\
+	Let $B \in$ NP, computed by a NDTM $N = (\Gamma, Q, \delta)$ with $k$ tapes in time $\leq T(n)$
+	
+	Objective :
+		$x \rightarrow \varphi_x$
+		
+		$x \in B \Leftrightarrow \varphi_x$ satisfiable\\
+		
+	$\varphi_x$ should encode that $x$ is accepted by $N$.
+	Variables of $\varphi_x$ : describe a sequence of configuration of $N$\\
+	Constraints : enforce seq of config corresponds to a computation of $N$ on input $x$
+	
+	Since, the time is $\leq T(n)$, for each tape, we can only look at $T(n)$ positions.\\
+
+	\underline{Variables:}\\
+	For each $\gamma \in \Gamma$ and tape r
+	\begin{itemize}
+		\item $C^r_{\gamma,i,j} = 1$ if $\gamma$ is written on tape r at time j in position i
+		\item $P^r_{i,j} = 1$ if at time j the head of tape r is at position i
+		\item $e_{q,j} = 1$ if at time j, the state is q
+	\end{itemize}
+	Number of variables: $(T(n)+1)^2 |\Gamma| k + (T(n)+1)^2 k + (T(n)+1)^2 |Q|$ = polynomial in n.\\
+	
+	\underline{Constraints}
+	\begin{itemize}
+		\item coherence (variables correspond to valid config)
+		\begin{enumerate}
+			\item Exactly one symbol per cell
+			\item Head is at exactly one position for each time step
+			\item One state for each time step
+		\end{enumerate}
+		\item initial x : initial config is correct
+		\begin{enumerate}
+			\item Initial state = q$_{\text{start}}$
+			\item Heads at the beginning
+			\item x written on Tape 1 at time 0
+			\item Other tapes are empty
+		\end{enumerate}
+		\item transition$_j$ : j-th transition is valid.
+		\begin{enumerate}
+			\item heads moved correctly and symbols correct
+			\item No changes for other cells
+		\end{enumerate}
+		\item Reach an accepting state
+	\end{itemize}
+	
+	\underline{Coherence}
+	\begin{enumerate}
+		\item $\bigwedge\limits_{i,j,r}\bigvee\limits_{\gamma \in \Gamma}(C^r_{\gamma,i,j}\wedge\bigwedge\limits_{\gamma' \neq \gamma}(\neg C^r_{\gamma',i,j}))$
+		\item $\bigwedge\limits_{j,r}\bigvee\limits_{i}(P^r_{i,j}\wedge\bigwedge\limits_{i' \neq i}(\neg P^r_{i',j}))$
+		\item Same idea
+	\end{enumerate}
+	
+	\underline{Initialize}
+	\begin{enumerate}
+		\item $e_{q_{\text{start}},0}$
+		\item $\bigwedge\limits_r P^r_{0,0}$
+		\item $\bigwedge\limits_{i=1}^{n}(C^1_{x_i,i,0})\bigwedge\limits_{i>n} C^1_{\Square,i,0} \wedge C^1_{\rhd,0,0}$
+		\item $\bigwedge\limits_{r>1} C^r_{\rhd,0,0} \wedge \bigwedge\limits_i C^r_{\Square,i,0}$
+	\end{enumerate}
+	
+	\underline{Transition$_j$}
+	
+	$j-1 \rightarrow j$\\
+	$\delta_0(q,\gamma_{1,\dots,k}) = (q_0,\gamma^0_{1,\dots,k},d_0)$\\
+	$\delta_1(q,\gamma_{1,\dots,k}) = (q_1,\gamma^1_{1,\dots,k},d_1)$
+	
+	Here $\gamma$ considered as a vector of symbols (for the k tape), the NDTM has exactly two transtions for each configuration, $d_i \in \{-1,0,1\}$ (direction in the tape)\\
+	
+	\underline{Notation}
+	"$\varphi_1 \implies \varphi_2" = \neg \varphi_1 \vee \varphi_2$\\
+	
+	\begin{enumerate}
+		\item $\bigwedge\limits_{i_1,\dots,i_k,\gamma_1,\dots,\gamma_k,q}(e_{q,j-1}\wedge\bigwedge\limits_r P^r_{i_r,j-1} \wedge C^r_{\gamma_r,i_r,j-1}) \implies ((e_{q_0,j}\wedge\bigwedge\limits_r P^r_{i_r+d_0,j}\wedge C^r_{\gamma^0_r,i_r,j})\vee(e_{q_1,j}\wedge\bigwedge\limits_r P^r_{i_r+d_1,j}\wedge C^r_{\gamma^1_r,i_r,j})$
+		\item $\neg P^r_{i,j-1} \implies (\bigwedge\limits_{\gamma}(C^r_{\gamma,i,j-1} \Longleftrightarrow C^r_{\gamma,i,j}))$
+	\end{enumerate}
+	
+	\underline{accept}\\
+	$e_{q_{\text{accept}},T(|x|)}\\
+	\varphi_x = \text{coherence} \wedge \text{initial}_x \wedge \bigwedge\limits_{j=1}^{T(|x|)-1} \text{transition}_j\wedge\text{accept}$\\
+	
+	$\varphi_x$ can be computed in time polynomial in $|x|$\\
+	N(x) has accepting path $\Longleftrightarrow x \in B$
+	
+	$\Updownarrow$\\
+	$\varphi_x$ is satisfiable.\\
+	
+	So B $\leq_p$ SAT.
+\end{proof}
+
+\Rem{}{arg2}{It is possible to have $\varphi_x$ be of size O(T log T)}
+
+\begin{claim}
+	C NP-complete and C $\leq_p$ A then A is NP-hard
+\end{claim}
+
+CNF formula (Conjonctive normal form)
+\begin{itemize}
+	\item Literal: $x_i$ or $\neg x_i$
+	\item Clause: $\bigvee\limits_{j} l_j$
+	\item CNF: $\varphi = \bigwedge\limits_i C_i$ where $C_i$ clause
+	\item kCNF : clauses have $\leq$ k variables
+\end{itemize}
+
+\Def{3SAT}{}{input: 3CNF $\varphi$\\
+	output: Is $\varphi$ satisfiable ?}
+
+\Thm{}{}{3SAT is NP-complete}
+Sufficient to show that SAT $\leq_p$ 3SAT
+
+\Rem{}{}{2SAT $\in$ P}
+
+\Def{coNP}{}{coNP $= \{L:L^c \in \text{NP}\}$, L $\in \{0,1\}^*$}
+
+\Def{other def}{}{$L \in$ coNP If there exists a poly P and a polytime M\\
+	$x \in L \Longleftrightarrow \forall u\in\{0,1\}^{p(|x|)} M(x,u) = 1$}
+
+\Ex{}{}{P $\subseteq$ coNP}
+
+Is SAT $\in$ coNP ?\\
+If yes, then coNP = NP
+\Proof{Let A $\in$ NP so A$\leq_p$ SAT\\
+	$x \in A \Longleftrightarrow f(x) \in SAT \Longleftrightarrow \forall u \in\{0,1\}^{p(|x|)} M(f(x),u) = 1$\\
+so A $\in$ coNP,
+so NP $\subseteq$ coNP.\\
+L $\in$ coNP $\implies$ L$^c$ $\in$ NP $\implies$ L$^c$ $\in$ coNP $\implies$ L $\in$ NP\\
+So NP = coNP.}
+
+But TAUTOLOGY $\in$ coNP.\\
+
+\begin{claim}
+	NP $\subseteq$ EXP\\
+	coNP $\subseteq$ EXP\\
+	EXP = $\bigcup\limits_{l>0} DTIME(2^{n^l})$
+\end{claim}
+\Proof{L $\in$ NP $\implies \exists$ p(n), M polytime on input x.\\
+	New TM M' :
+	\begin{enumerate}
+		\item u $\in \{0,1\}^{p(|x|)}$
+		\item For each u, run M on (x,u), if accepts $\implies$ accpet
+		\item At the end, reject
+	\end{enumerate}
+
+	M' runs in time 2$^{\text{poly}(n)}$ and M'(x) accpets $\Longleftrightarrow \exists u \in \{0,1\}^{p(|x|)}:M(x,u) = 1$}
+
+Similar argument for coNP.\\
+
+P $\neq$ EXP (Time hierarchy theorem)
+\Thm{}{}{Let f: $\N \rightarrow \N^*$, g: $\N \rightarrow \N^*$ be time-constructible and f log f = o(g) then DTIME(f) $\subsetneq$ DTIME(g)}
+
+\Rem{}{}{\begin{itemize}
+		\item Ex: f(n) = n, g(n) = n$^2$\\
+		DTIME(n) $\subsetneq$ DTIME(n$^2$)\\
+		P $\subseteq$ DTIME(2$^n$) $\subsetneq$ DTIME(2$^{2n}$) $\subseteq$ EXP
+		\item Definition: T is time constructible if there exists a constant c and a TM M that on input 1$^n$ outputs 1$^{T(n)}$ in time $\leq$ cT(n)\\
+		Ex: T(n) = c, T(n) = n$^c$ are time constructible
+	\end{itemize}}
+\Proof{Diagonalization
+	
+	Define the machine V: input($\alpha$,x) n = |($\alpha$,x)|
+	\begin{enumerate}
+		\item Compute g(n)
+		\item run $\mathcal{U}$($\alpha$,($\alpha$,x)) for g(n) steps
+		\item if computation finished output $\neg\mathcal{U}(\alpha,(\alpha,x))$\\
+		Otherwise reject.
+	\end{enumerate}
+	V runs in time O(g(n))
+	Now want to show that no machine M such that M($\alpha$,($\alpha$,x)) = V(($\alpha$,x)) $\forall\alpha,x$ runs in time $\leq$ cf(n)
+	Let M$_{\alpha_0}$ be a machine that runs in time $\leq$ cf(n)\\
+	From the universal TM theorem, there is a constant C$_{\alpha_0}$ such that for all y\\
+	$\mathcal{U}(\alpha_0,y)$ stops after C$_{\alpha_0}$(1+cf($|y|$)log(f(|y|))
+	If |y| is large enough, $\leq$ g(|y|)
+	Set y = ($\alpha_0$,x). So $\mathcal{U}$ on imput ($\alpha_0$,($\alpha_0$,x)) stops after $\leq$ g(|($\alpha_0$,x)|) for large enough |x|
+	V(($\alpha_0$,x)) = $\neg\mathcal{U}$($\alpha_0$,($\alpha_0$,x)) = $\neg$M$_{\alpha_0}$($\alpha_0$,x)
+	So M$_{\alpha_0}$ cannot compute the same langage as V. $\implies$ The language computed by V is not in DTIME(f)}
+\end{document}
