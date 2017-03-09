@@ -82,11 +82,11 @@
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\C}{\mathcal{C}}
 \newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
 \newcommand{\X}{\mathcal{X}}
 \newcommand{\brakets}[1]{\langle#1\rangle}
-\newcommand{\betaar}{\rightarrow_\beta}
-\newcommand{\betar}{\twoheadrightarrow_\beta}
-\newcommand{\alphaeq}{=_\alpha}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\bit}{\{0,1\}}
 
 \newcommand{\ind}[1]{\mathds{1}_{#1}}
 \renewcommand{\epsilon}{\varepsilon}
@@ -334,13 +334,13 @@ Adv_{\A'} &=& |p-\frac{1}{2}|\\
 
 \Def{Semantically secureness}{def:semSecure}{An ecryption scheme $(Keygen,Enc,Dec)$ over $(K,l,C)$ is semantically secure if, for any PPT adversary $\A$, there exists a negligible function $negl:\N\rightarrow\N$ such that $Adv_\A(\lambda)\leq negl(\lambda)$.}
 
-Consider the experiment $Exp-b$ where $b\in\{0,1\}$.
+Consider the experiment $Exp_b$ where $b\in\{0,1\}$.
 \begin{itemize}
 \item $\A$ is given $A^\lambda$ and chooses messages $M_0,M_1$ of the same length
 \item Challenger chooses a key $k\hookrightarrow Keygen(1^\lambda)$ and computes $c=Enc(k,M_b)$ which is given to $\A$.
 \item $\A$ outputs $b'\in\{0,1\}$ and wins if $b=b'$. 
 \end{itemize}
-$Adv_\A=|\Pr(\A^{Exp-1}(1^\lambda)=1)-\Pr(\A^{Exp-0}(1^\lambda)=1)|$.
+$Adv_\A=|\Pr(\A^{Exp_1}(1^\lambda)=1)-\Pr(\A^{Exp_0}(1^\lambda)=1)|$.
 
 \begin{center}
 \begin{tikzpicture}[>=latex]
@@ -368,50 +368,213 @@ Let $G:\{0,1\}^s\rightarrow\{0,1\}^n$ be a PRG. Encrypt $M\in\{0,1\}^n$ using $k
 Decrypt c as $M=c\oplus G(k)$.
 
 \Thm{}{thm:securePRGSemSecEncryt}{If $G$ is a PRG, then $Enc(k,M)=M\oplus G(k)$ is a semantically secure encryption scheme : If there exists a PPT $\A$ with advantage $\epsilon$ against semantic security, there exists a PRG distinguisher $\mathcal{B}$ with advantage $\frac{\epsilon}{2}$.}
+
+\Rem Then $Dec(k,c)=c\oplus G(k)$
+
 \begin{proof} (reduction).
-Idea og the proof:
+\paragraph{Idea of the proof} We suppose $\A$ and will build $\mathcal{B}$ against the PRG.
 \begin{center}
 \begin{tikzpicture}[>=latex]
 \node	[]	at 	(0,6)	{PRG Challenger};
 \node	[]	at	(6,6)	{Reducion $\mathcal{B}$};
-\node	[]	at	(8,2.75)	{Adversary $\A$};
-\node	[]	at	(8,2.25)	{against semantic security};
+\node	[]	at	(12,6.25)	{Adversary $\A$};
+\node	[]	at	(12,5.75)	{against semantic security};
 
-\draw	[-]		(3,0)	--								(3,7);
-\draw	[-]		(3,7)	--								(10,7);
-\draw	[-]		(3,5)	--								(10,5);			
+\draw	[-]		(3,0)	--								(3,1.4);
+\draw	[-]		(3,2)	--								(3,4.4);
+\draw	[-]		(3,5)	--								(3,7);
+\draw	[-]		(9,0)	--								(9,1.4);
+\draw	[-]		(9,4)	--								(9,7);
+%\draw	[-]		(3,7)	--								(10,7);
+%\draw	[-]		(3,5)	--								(10,5);			
 
-\draw	[->]	(5,3.5)	--node[above]	{$M_0,M_1$}		(3.5,3.5);
-\draw	[->]	(-1,3)	--node[above]	{$x\in\{0,1\}$} (2.5,3);
-\node	[]	at	(1,2.75)	{with $x\hookrightarrow U(\{0,1\})$};
-\node	[]	at	(1,2.25)	{or $x=G(k)$};
-\node	[]	at	(1,1.75)	{with $k\hookrightarrow U(\{0,1\}^s)$};
-\draw	[-]		(-1,3)	--								(-1,4.5);
-\draw	[->]	(3.5,2.5)	--node[above]	{$c=Enc(k,M_b)$}	(5,2.5);
-\draw	[->]	(5,1.5)	--node[above]	{$b'$}		(3.5,1.5);
+\draw	[->]	(9.75,3.5)	--node[above]	{$M_0,M_1$}		(8.25,3.5);
+\draw	[->]	(8.25,2.5)	--node[above]	{$c=Enc(k,M_b)$}	(9.75,2.5);
+\draw	[->]	(9.75,1.5)	--node[above]	{$b'$}		(8.25,1.5);
+
+
+
+\node	[]	at	(0,5.5)		{$b\in\{0,1\}$ uniform};
+\node	[]	at	(0,5)	{if $b=0$ $x\hookrightarrow U(\{0,1\})$};
+\node	[]	at	(0,4.5)	{else $x=G(k)$};
+\node	[]	at	(0,4)	{with $k\hookrightarrow U(\{0,1\}^s)$};
+
+\draw [->] (2.25,4.5) --node[above] {$x$} (3.75,4.5);
+\draw [->] (3.75,1.5) --node[above] {$b'$} (2.25,1.5);
 \end{tikzpicture}
 \end{center}
 
-$Exp$-$b$:
+$Exp_b$:
 \begin{itemize}
 \item $\A$ chooses $M_0,M_1\in\{0,1\}^n$
 \item $\mathcal{B}$ chooses $k\hookrightarrow U(\{0,1\}^s)$ and gives $c=M_b\oplus G(k)$ to $\A$.
 \item $\A$ outputs $b'$.
 \end{itemize}
 
-$Rond$-$b$:
+$Rand_b$:
 \begin{itemize}
 \item $\A$ chooses $M_0,M_1\in\{0,1\}^n$
 \item $\mathcal{B}$ chooses $x\hookrightarrow U(\{0,1\}^n)$ and gives $c=M_b\oplus x$ to $\A$
 \item $\A$ outputs $b'$
 \end{itemize}
 
-By hypothesis, $Adv_\A=|\Pr(A^{Exp-1}=1)-\Pr(\A^{Exp-0}=1)|\geq\epsilon$. Also $|\Pr(A^{Round-1}=1)-\Pr(\A^{Round-0}=1)|=0$. How does $\mathcal{B}$ works?
+By hypothesis, $Adv_\A=|\Pr(A^{Exp_1}=1)-\Pr(\A^{Exp_0}=1)|\geq\epsilon$. Also $|\Pr(A^{Rand_1}=1)-\Pr(\A^{Rand_0}=1)|=0$. How does $\mathcal{B}$ works?
 \begin{itemize}
 \item $\mathcal{B}$ receives $x\in\{0,1\}^n$ and must decide if $x=G(k)$ or uniform.
 \item When receiving $M_0,M_1$ form $\A$ it returns $c=M_b\oplus x$ for a random $b\hookrightarrow U(\{0,1\})$
 \item Output $b'$
 \end{itemize}
-If $b'=b$, it outputs $1$ ($x=G(k)$) otherwise it outputs $0$ -$x$ uniform). In the first case it runs $Exp-1$ or $Exp-0$ with same proba. In the second, idem is the $Round$ experiments, that are the same from $\A$'s point of view.
+If $b'=b$, it outputs $1$ ($x=G(k)$) otherwise it outputs $0$ -$x$ uniform). In the first case it runs $Exp_1$ or $Exp_0$ with same proba. In the second, idem is the $Round$ experiments, that are the same from $\A$'s point of view.
+
+\paragraph{The proof:} 
+\begin{itemize}
+\item In the uniform case for $x$. Then $c$ is uniformly distributed independently of $b$. Then $\Pr(\A=1|b=0)=\Pr(\A=0|b=1)$.
+\item In the other case $x=G(k)$, $k$ uniform. When $b=0$ in $\A$'s view, we are in $Exp_0$, when $b=1$, we are in $Exp_1$.
+\end{itemize}
+Then \[\begin{array}{r c l}
+Adv_\B &=&|\Pr_{Uniform}(\B=1)-\Pr_{G}(\B=1)|\\
+&=& |\Pr_{Uniform}(b=b')-\Pr_{G}(b=b')|\\
+&=& |\half-\half\Pr_G(b'=0|b=0)-\half\Pr_G(b'=1|b=1)|\\
+&=& \half |1-\Pr_{Exp_0}(\A=0)-\Pr_{Exp_1}(\A=1)|\\
+&=& \half |\Pr_{Exp_0}(\A=1)-\Pr_{Exp_1}(\A=1)|\\
+&=& \half Adv_\A
+\end{array}\].
+Then if $\A$ efficient then $\B$ also what contradicts the PRG.
 \end{proof}
+
+\section{Block ciphers, PRFs}
+The most used cryptographic primitive (symmetric encryption).
+
+$Enc:\begin{array}{r c l}
+\bit^{n'}\times\bit^n &\rightarrow&\bit^m\\
+key,pleintext&\mapsto&ciphertext
+\end{array}$ and $Dec:\begin{array}{r c l}
+\bit^{n'}\times\bit^n &\rightarrow&\bit^m\\
+key,ciphertext&\mapsto&pleintext
+\end{array}$
+
+\subsection{In pratice}
+Woks with $k_1...k_n$ keys.
+\subsubsection{Feistel networks; (common) design principle}
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node at (0,8) {$M_L$ ($n/2$ bits)};
+\node at (6,8) {$M_R$ ($n/2$ bits)};
+\node at (3,7) {$F_{k_1}(\cdot)$};
+\node at (0,7) {$\oplus$};
+\node at (3,5) {$F_{k_2}(\cdot)$};
+\node at (0,5) {$\oplus$};
+
+\draw [-] (0,7.8) -- (0,7.2);
+\draw [-] (0,7.2) -- (0,6.2);
+\draw [-] (0.2,7) -- (2.5,7);
+\draw [-] (6,7.8) -- (6,6.2);
+\draw [-] (6,7) -- (3.5,7);
+
+\draw [-] (0,5.8) -- (0,5.2);
+\draw [-] (6,5.8) -- (6,4.2);
+\draw [-] (0,4.8) -- (0,4.2);
+\draw [-] (0.2,5) -- (2.5,5);
+\draw [-] (6,5) -- (3.5,5);
+
+\draw [-] (6,6.2) -- (0,5.8);
+\draw [-] (0,6.2) -- (6,5.8);
+
+\node at (3,3) {$\vdots$};
+
+\draw [-] (6,1.2) -- (0,0.8);
+\draw [-] (0,1.2) -- (6,0.8);
+
+\node at (0,0) {$C_L$ ($n/2$ bits)};
+\node at (6,0) {$C_R$ ($n/2$ bits)};
+\end{tikzpicture}
+
+With $r$ rounds.
+\end{center}
+$F:\bit^{n'}\times\bit^{n/2} \rightarrow \bit^{n/2}$ used a lot in practice, also a bit in provable constructions (RSA, OAEP).
+
+Given $k_1,...,k_n$, $C=C_L||C_R$ we can recover $M=M_L||M_R$ (following the circuit from bottom to top).
+
+DES (1977, designed by IBM/NSA) was the standard choice until the 2000s.
+
+\Ex{}{}{With $n=64$, and key-size $n'=56$. We take $k\in\bit^{n'}$ each $k_i$ is a (simple ) function of $k$ and their size is $48$.
+Take $F:\bit^{48}\times\bit^{32} \rightarrow \bit^{32}$ and $r=16$. For today, $2^{56}$ is not big enough to provide security. Broken by exhaustive search. In pratice we still use it within "Triple DES".}
+
+\subsubsection{Rijndael/AES}
+Competition by NIST.\\
+Rijndael was chosen and its norm change to AES. The key size are $128,192,256$. the block size is n=128 and works with rounds $r=10,12,14$. but not base on Feistel networks.
+
+\subsection{Formalisation : Pseudo Random Function (PRF)}
+\subsubsection{Definition}
+\Def{Pseudo Random Function}{def:PRF}{A pseudo random function is a deterministic function $F:\bit^t\times\bit^n\rightarrow\bit^m$ computable in poly time that satisfies the \underline{security requirement}:\\
+it cannot be efficiently distinguished from a truly uniform function $f:\bit^n\rightarrow\bit^m$.}
+
+\Rem We have $|\{f:\bit^n\rightarrow\bit^m\}|=(2^m)^{2^n}$ and $|\{F(k,\cdot)\}|=2^t$
+
+We consider the two experiments $Exp_{Unif}$ and $Exp_F$ that are the equivalent for $F$ of the experiments where a challenger gives a random $x$ or $x=G(k)$ to an adversary of the PRG $G$ (it chooses a random function $f$ in $\bit^n\rightarrow\bit^m$). 
+
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node	[]	at 	(0,6)	{Challenger};
+\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(0,5.5)	{$b\hookrightarrow U(\{0,1\})$};
+\node	[]	at	(0,5)	{$f\hookrightarrow U(\bit^n\rightarrow\bit^m)$};
+\node 	[]	at	(0,4.5)	{$k\hookrightarrow U(\{0,1\}^t)$};
+\node	[]	at	(0,1)	{Test if $b=b'$};
+
+\draw	[->]	(5,4)	--node[above]	{$x_i$}		(1,4);
+
+\node	[]	at	(0,3.5)	{if $b=0$ then $y_i=f(x_i)$};
+\node	[] at	(0,3)	{else $y_i=F(k,x_i)$};
+\draw	[->]	(1,2.5)	--node[above]	{$y_i$}	(5,2.5);
+\draw	[->]	(5,1.5)	--node[above]	{$b'$}		(1,1.5);
+\end{tikzpicture}
+\end{center}
+
+\Def{Security of a PRF}{def securePRF}{The PRF $F$ is said secure if for all PPT adversary $\A$ we have $Adv_\A(F)$ negligible.} 
+
+It seems much stronger than a PRG, whixh only do one query on a uniformly chosen input where as many queries on adaptively chosen inputs.
+
+\subsubsection{Equivalence between PRF and PRG.}
+\Thm{Equivalence}{thm:equivPRGPRF}{There exists a secure PRG if and only if there exists a secure PRF.}
+
+\begin{proof}
+\begin{itemize}
+\item Easy direction:
+if we have a PRF $F:\bit^t\times\bit^n\rightarrow\bit^m$ then we build a PRG $G:\bit^t\rightarrow\bit^m$. Define $G(k)=F(k,0)$. If we need more bits, $G(k)=||_{i}F(k,i)$
+
+The rest of this direction is given as an exercise.\\
+\Rem We could have defined also $G(k||m)=F(k,r)$.
+\item The less easy direction. Assume we have $G:\bit^n\rightarrow\bit^{2n}$ a PRG. Let us see first how to build PRF $F_1:\bit^n\times\bit\rightarrow\bit^n$.
+We define $F_1(k,0)=G(k)_{|L}$ and $F_1(k,1)=G(k)_{|R}$.
+
+We also define $F_2:\bit^n\times\bit^2\rightarrow\bit^n$. $F_2(k,(i,j))=F_1(F_1(k,i),j)$.
+
+We use an hybrid argument. If the PRF adversary notices the difference between $Exp_F$  and the first hybrid it can be used to break the PRG. If the PRF adversary notices the diffrence between the 2 hybrid, we can break the PRG.
+Idem between $Exp_{Unif}$ and the second hybrid.
+
+$F_l:\bit^n\times\bit^l\rightarrow\bit^n$ described by the following algorithm\\
+\begin{algorithme}
+\underline{Inputs:} key $k$, $x$.\\
+\ForFromTo{i}{0}{l}{$k_i::=\begin{array}{r l}
+G(k_{i-1})_{|L} & \text{if $x_i=0$}\\
+G(k_{i-1})_{|R} & \text{if $x_i=1$}\\
+\end{array}$}
+\Return $k_l$
+\end{algorithme}
+\end{itemize}
+\end{proof}
+
+\subsection{Encrypting with PRF}
+\subsubsection{One message security}
+What not to do ELB (Electronic Code Book) mode\\
+$m=(m_1||...||m_t)$ with $m_i\in\bit^n$\\
+$c=F_k(m_1)||...||F_k(m_t)$\\ 
+It is not secure.
+
+DETCTR (determinist Counter Mode)
+$m=(m_1||...||m_t)$ with $m_i\in\bit^n$\\
+$c=F_k(1)\oplus m_1||...||F_k(t)\oplus m_t$\\
+This is sementically secure against 1 message attacks. The proof is almost identical to the one of the PRG construction (it's the one time pad).
+
 \end{document}
