@@ -1,10 +1,3 @@
-%/!\ /!\ 
-%
-% PLEASE DO NOT EDIT THIS IF YOU CAME HERE BY MISTAKE !!!!
-%
-
-% RTFMN : https://tobi.oetiker.ch/lshort/lshort.pdf
-
 \documentclass{article}
 \usepackage{xspace}
 \usepackage[utf8]{inputenc}
@@ -70,9 +63,9 @@
 \newcommand{\Cor}[3]{\begin{cor}[#1]\label{#2}#3\end{cor}}
 \newcommand{\Prop}[3]{\begin{prop}[#1]\label{#2}#3\end{prop}}
 
-\newcommand{\Rem}{\underline{Remark:}}
-\newcommand{\Idea}{\underline{Idea:}}
-\newcommand{\Question}{\underline{Question:}}
+\newcommand{\Rem}{\underline{Remark:} }
+\newcommand{\Idea}{\underline{Idea:} }
+\newcommand{\Question}{\underline{Question:} }
 
 \newcommand{\hsp}{\hspace{20pt}}
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
@@ -226,7 +219,7 @@ The major problems with that are:
 \Prop{}{}{For any negligible function $\epsilon$, for any polynomial $P$, the product $P(n)\epsilon(n)$ is still negligible}
 
 \Def{Predictable PRG}{def:predPRG}{
-A PRG is \underline{predictable} if there exists a PPT (Proba Poly Time) algorithm $A$ and an index $i\in\llbracket1,m\rrbracket$ such that:
+A PRG is \underline{predictable} if there exists a PPT (Probabilistic Polynomial Time) algorithm $A$ and an index $i\in\llbracket1,m\rrbracket$ such that:
 \[\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])>\frac{1}{2}+\epsilon(s)\]
 for some non-negligible function of $s$, $\epsilon>0$.}
 \underline{Remark:} It restricts the adversary's power (otherwise $A$ could use all possible $k$) and the probability is taken over the uniform choice of $k$ and the internal randomness of $A$.
@@ -572,9 +565,174 @@ $m=(m_1||...||m_t)$ with $m_i\in\bit^n$\\
 $c=F_k(m_1)||...||F_k(m_t)$\\ 
 It is not secure.
 
-DETCTR (determinist Counter Mode)
+DETCTR (deterministic Counter Mode)\\
 $m=(m_1||...||m_t)$ with $m_i\in\bit^n$\\
 $c=F_k(1)\oplus m_1||...||F_k(t)\oplus m_t$\\
-This is sementically secure against 1 message attacks. The proof is almost identical to the one of the PRG construction (it's the one time pad).
+This is semantically secure against 1 message attacks. The proof is almost identical to the one of the PRG construction (it's the one time pad). However it is still limited to one-time security (encrypting two distinct $l$-block messages is insecure).
+
+\subsubsection{Chosen plaintext security for multiple messages}
+\Def{Chosen-plaintext security(CPA)}{def:CPAsecure}{The CPA security correspond to the fact that no PPT adversary $\A$ has noticeable advantage in distinguishing two experiments.}
+
+$Exp_0$: Adversary makes encryption queries for $(m_{i,0},m_{i,1})$ such that $|m_{i,0}|=|m_{i,1}|$ and gets $c_i=Enc(k,m_{i,0})$. Adversary outputs $b\in\bit$.
+
+$Exp_1$: Adversary makes encryption queries for $(m_{i,0},m_{i,1})$ such that $|m_{i,0}|=|m_{i,1}|$ and gets $c_i=Enc(k,m_{i,1})$. Adversary outputs $b\in\bit$.
+
+The advantage here is $Adv_\A^{CPA}(\lambda)=|\Pr(A^{Exp_0}(1^\lambda)=1)-\Pr(A^{Exp_1}(1^\lambda)=1)|$.
+
+The scheme is CPA secure if this advantage is a negligible function of $\lambda$ for any PPT $\A$.
+
+\Rem \begin{itemize}
+\item CPA security assumes that adversary can influence what is encrypted
+\item All schemes seen so far do not provide CPA security because of determinism.
+\item Encryption must be randomized, ciphertexts must be longer that plaintexts.
+\end{itemize}
+
+\paragraph{CPA security encryption from PRFs} Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF. We encrypt $m$ as $E(k,m)=(r,m\oplus F(k,r))$ with $r\hookrightarrow U(\bit^n)$.
+
+\Thm{}{thm:CPAsecurePRF}{The previous scheme is CPA-secure if $F$ is a PRF. Anty CPA attacker $\A$ implies a PRF distinguisher $\B$ such that $Adv_\A^{CPA}(\lambda)\leq 2(Adv_\B^{PRF}(\lambda)+\frac{q^2}{2^n})$, where $q$ ois the number of encryption queries made by $\A$.}
+
+\begin{proof}
+Consider an ideal scheme where $F(k,\cdot)$ is replaced by $R(\cdot)$ which is truly random. Let $Rand_b$ which is the CPA experiment $Exp_b$ where $F(k,\cdot)$ is replaced by $R(\cdot)$ at each query $(m_{i,0},m_{i,1})$. Then $\A$ sees $(r_i,m_{i,b}\oplus R(r_i))$.
+
+We call "Repeat" the following event: exists $r\in\bit^n$ that is used in at least two distinct queries
+
+$Adv^{Rand_b}_\A = |\Pr(A^{Rand_1}(1^\lambda)=1)-\Pr(A^{Rand_0}(1^\lambda)=1)|$
+
+We have $\Pr(A^{Rand_1}(1^\lambda)=1|\neg\text{Repeat})=\Pr(A^{Rand_0}(1^\lambda)=1|\neg\text{Repeat})$. Equivalently, if $d\hookrightarrow U(\bit)$ we have $\Pr(A^{Rand_d}(1^\lambda)|\neg\text{Repeat})=\half$.
+
+$\Pr(\text{Repeat})=\Pr(\exists i,j\leq q, r_i=r_j)\leq\sum_r\Pr(\exists i,j\leq q, r_i=r\wedge r_j=r)$\\
+Then $\Pr(\text{Repeat})\leq \sum_r\sum_{i\neq j\leq q}\Pr(r_i=r\wedge r_j=r)=\frac{q(q-1)}{2}\sum_r \Pr(r_i=r)\Pr(r_j=r)=\frac{q(q-1)}{2}2^n(\frac{1}{2^n})^2<\frac{q^2}{2^n}$.\\
+$\Pr(\text{Repeat})\leq\frac{q(q-1)}{2}2^n(\frac{1}{2^n})^2<\frac{q^2}{2^n}$.
+
+We do the reduction $\B$ to distinguish $F(k,\cdot)$ and $R$ using $\A$.
+
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node	[]	at 	(0,6)	{PRF Challenger};
+\node	[]	at	(6,6)	{Reducion $\mathcal{B}$};
+\node	[]	at	(12,6)	{Adversary $\A$};
+
+\draw	[-]		(3,0)	--								(3,1.4);
+\draw	[-]		(3,2)	--								(3,4.4);
+\draw	[-]		(3,5)	--								(3,7);
+\draw	[-]		(9,0)	--								(9,1.4);
+\draw	[-]		(9,4)	--								(9,7);
+%\draw	[-]		(3,7)	--								(10,7);
+%\draw	[-]		(3,5)	--								(10,5);			
+
+
+\node [] at (6,4) {For each $1\leq i\leq q$};
+\draw	[->]	(9.75,3.5)	--node [above] {$(m_{i,0},m_{i,1})$}		(8.25,3.5);
+\draw	[->]	(8.25,2.5)	--node [above] {$c_i$}	(9.75,2.5);
+\draw	[->]	(9.75,1.5)	--node[above]	{$d'$}		(8.25,1.5);
+
+
+
+\node	[]	at	(0,5.5)		{$b\in\{0,1\}$ uniform};
+\node	[]	at	(6,5.5)		{$d\in\{0,1\}$ uniform};
+%\node	[]	at	(0,5)	{if $b=0$ then };
+%\node	[]	at	(0,4.5)	{else };
+%\node	[]	at	(0,4)	{with $k\hookrightarrow U(\{0,1\}^s)$};
+
+\draw [->] (2.25,4.5) --node[above] {$x$} (3.75,4.5);
+\draw [->] (3.75,1.5) --node[above] {$b'$} (2.25,1.5);
+\end{tikzpicture}
+\end{center}
+
+We have $Adv^{PRF}_\B=|\Pr(\B^{PRF-Exp_1}(1^\lambda)=1)-\Pr(\B^{PRF-Exp_0}(1^\lambda)=1)|$.
+
+$\B$ plays $PRF-Exp_b$ with its challenger and assumes that the of $\A's$ challenger in the CPA experiment.
+\begin{itemize}
+\item $\B$ picks $d\hookrightarrow U(\bit)$.
+\item At each encryption query, $\A$ chooses $(m_{i,0},m_{i,1})$. Then $\B$ chooses $r_i\hookrightarrow U(\bit^n)$ and queries $k$ to its PRF challenger. $\B$ obtains $f_i=\left\{\begin{array}{r l}
+F(k,r_i) & \text{if $b=1$}\\
+R(r_i) &\text{otherwise}
+\end{array}\right.$ a,d give $c_i=(r_i,m_{i,d}\oplus f_i)$ to $\A$.
+\item $\A$ outputs $d'$ and $\B$ checks $d'=d$. If so it returns $1$ (the challenger uses $F$), $0$ otherwise (the challenger uses $R$).
+\end{itemize} 
+
+
+$\Pr(\B^{PRF-Exp_1}(1^\lambda)=1)=\Pr(1\leftarrow\A|d=1)\Pr(d=1)+\Pr(1\leftarrow\A|d=0)\Pr(d=0)$.\\
+Then $\Pr(\B^{PRF-Exp_1}(1^\lambda)=1)=\half(\Pr(\A^{CPA-Exp_1}(1^\lambda)=1)+\Pr(\A^{CPA-Exp_0}(1^\lambda)=0))$\\
+$\Pr(\B^{PRF-Exp_1}(1^\lambda)=1)=\half(\Pr(\A^{CPA-Exp_1}(1^\lambda)=1)-\Pr(\A^{CPA-Exp_0}(1^\lambda)=0))+\half$
+
+On the other hand:\\
+$\Pr(\B^{PRF-Exp_0}(1^\lambda)=1)=\Pr(\B^{PRF-Exp_0}(1^\lambda)=1|\text{Repeat})\Pr(\text{Repeat})+\Pr(\B^{PRF-Exp_0}(1^\lambda)=1|\neg\text{Repeat})\Pr(\neg\text{Repeat})$
+$\Pr(\B^{PRF-Exp_0}(1^\lambda)=1)\leq \Pr(\text{Repeat})+\half\leq \frac{q^2}{2^n}+\half$.
+
+Now we can conclude:
+
+$Adv_\B(\lambda)=|\half(\Pr(\A^{CPA-Exp_1}(1^\lambda)=1)-\Pr(\A^{CPA-Exp_0}(1^\lambda)=0))+\half-\Pr(\B^{PRF-Exp_0}(1^\lambda)=1)|$\\
+$Adv_\B(\lambda)\leq \half Adv_\A(\lambda)-\frac{q^2}{2^n}$
+\end{proof}
+
+Even better: R-CTR (R for randomized) just needs a PRF and is parallelizable:
+
+Fresh IV is sued every time to encrypt $(m_0,...,m_{l-1})$ and $c_i=m_i\oplus F(k,IV+i)$.
+
+\Thm{}{def:RCTRsecure}{If $F$ is a PRF then the R-CTR provides CPA security.}
+
+\section{Message authentication codes and CCA secure encryption}
+\subsection{Message authentication code (MAC)}
+The goal is to ensure data authentication and integrity (no manipulation, insertion, deletion,...). It can be useful without confidentiality.
+
+\Def{MAC}{def:MAC}{A Message authentication code is a tuple of PPT algorithms $(Gen,MAC,Verif)$ such that:\begin{itemize}
+\item $Gen$ is a key generator algorithm taking as input a security parameter $1^\lambda$ and outputs a key $k$ such that $|k|\geq\lambda$.
+\item $Mac$ takes as input $k$ and a message $m$ and outputs a tag $t=Mac_k(m)$.
+\item $Verif$ take as input $k$ a candidate $(m,t)$ and outputs $0$ or $1$ deterministicaly.
+\end{itemize}}
+
+\Def{}{def:unforgeadapt}{A MAC is unforgeable under adaptive chosen-message attacks if no PPT adversary $\A$ has noticeable advantage in the following game:\begin{itemize}
+\item Challenger generates $k=Gen(1^\lambda)$ and initializes $Q=\emptyset$. Adversary is given $A^\lambda$.
+\item $\A$ has oracle acess to $MAC_k(\cdot)$, $\A$ chooses $m$, challenger return $t=MAC_k(m)$ and updates $Q\leftarrow Q\cup\{m\}$
+\item $\A$ outputs $(m^*,t^*)$ and wins if $Verif_k(m*,t*)=1$ and that $m^*\notin Q$.
+\end{itemize}}
+
+It means that given examples $\A$ can extrapolate and compute a tag by itself on a new message $m^*$.
+
+Here we define the advantage as follows: $Adv_\A^{MAC}=\Pr(\A\text{ wins})$.
+
+\Rem It is strongly unforgeable if the adversary wins if it outputs $(m^*),t)$ such that $(m^*),t)\notin\{(m_1,t_1),...,(m_q,t_q)\}$ where $m^*=m_i$ for some î: it outputs a new $t^*$ for a previously authencidated $m^*=m_i$ for some $i$.
+
+\subsection{Constructing MACs}
+\paragraph{Fixed-lenght MAC} We take a PRF and get a MAC. Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF.\begin{itemize}
+\item $Gen(1^\lambda)$ returns $k\hookrightarrow U(\bit^\lambda)$
+\item $Mac$: given $k$ and $m$ it outputs $t=F(k,m)$
+\item $Verif$: given $k$ and $(m,t)$ it returns $1$ iif $t=F(k,m)$.
+\end{itemize}
+
+\Thm{}{thm:cstrongunforgeMacbyPRF}{If $F$ is a PRF, the associated MAC is a strongly unforgeable one under chosen message attack; if there is a PPT attacjer $\A$ against the MAC, there is a PRF distinguisher $\B$ such that $Adv_\B^{Prf}(\lambda)\geq Adv_\A^{Mac}(\lambda)-\frac{1}{2^m}$}
+
+\begin{proof}
+We build a distinguisher $\B$ that has access to an oracle $O:\bit^n\rightarrow\bit^m$ where the oracle is such that $O(x)=\left\{\begin{array}{r l}
+F(k,x) & \text{in $PRF-Exp_1$}\\
+R(x) & \text{in $PRF-Exp_0$}
+\end{array}\right.$ where $R$ is the random function.
+
+$\B(1^\lambda)$:\begin{itemize}
+\item Runs $\A$ on $1^\lambda$.
+\item At each query $m$ made by $\A$, $\B$ queries $O(m)$ to its PRF challenger and returns $t=O(m)$ to $\A$
+\item When $\A$ outputs $(m^*,t^*)$ then $\B$ queries $O(m^*)$ to its challenger and test if $t^*=O(m^*)$ and returns $1$ in case of equality.
+
+In $PRF-Exp_0$ $O(m)=R(m)$ for each $m$ Then $\Pr(\B(1^\lambda=1|O=R)=\frac{1}{2^m})$ and in $PRF-Exp_1$ $O=F(k,\cdot)$ then $\Pr(B(1^\lambda)=1|O=F(k,\vdots) = Adv_\A^{MAC}(\lambda)$. Then $Adv_\B(\lambda)\geq Adv_\A^{MAC}(\lambda) - \frac{1}{2^m}$.
+\end{itemize}
+\end{proof}
+\paragraph{Larger length MACs} We talk about CBC (cipher block chaining) MACs. We get long but fixed length messages: $m\in(\bit^n)^l$ with $l$ polynomial in $\lambda$ is fixed in advance.
+
+Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF with $n$ polynomial in $\lambda$. Get the following MAC:\begin{itemize}
+\item $Gen(\lambda)$ chooses $k\hookrightarrow U(\bit^\lambda)$
+\item $Mac_k(m)$ given $m=(m_1...m_l)$ with $m_i\in\bit^n$ for all $i$.
+\subitem set $t_0=0^n$
+\subitem for $i=1$ to $l$, set $t_i=F(k,t_{i-1}\oplus m_i)$.
+\subitem output $t=t_l$.
+\item $Verif_k(m,t)$: given $k$ and $m=(m_1...m_l)$ and $t$, outputs $1$ iff $t=Mac_k(m)$.
+\end{itemize} 
+
+\Rem \begin{itemize}
+\item $t_0$ must be fixed. Taking a random $t_0=IV$ and sending $(t_0,t_l)$ is insecure ($\A$ can change $t_0$ and $m_1$ such that $t_0\oplus m_1$ is constant). 
+\item only $t_l$ is outputed (sending all of them is again insecure)
+\item if length not fixed in advance, it a;so becomes insecure, if $t_Mac_k(m)=F(k,m)$ then $t=Mac_k(m||t\oplus m)$. 
+\item Extended CBC-MAC allows variable length messages.
+\end{itemize}
 
 \end{document}
