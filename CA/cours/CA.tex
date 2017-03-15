@@ -382,15 +382,15 @@ Output a gcd of a,b\\
 
 \subsection{Analysis}
 \subsubsection{Number of steps}
-$\parallel x \parallel := \log_2(1+|x|),x\in\Z\\
+$\| x \| := \log_2(1+|x|),x\in\Z\\
  \deg x + 1, x\in\K[X]$
 
-\Prop{}{}{The number of steps in Euclid's algorithm is O(1 + min($\parallel a \parallel,\parallel b \parallel) - \parallel gcd(a,b)\parallel)$}
+\Prop{}{}{The number of steps in Euclid's algorithm is O(1 + min($\| a \|,\| b \|) - \| gcd(a,b)\|)$}
 \Proof{Common step to R=$\Z \& \K[X]$\\
-	Step 1: divide a by b, then we are reduced to a gcd(a',b') with $\parallel a' \parallel,\parallel b' \parallel \leq$ min($\parallel a' \parallel,\parallel b' \parallel)$\\
+	Step 1: divide a by b, then we are reduced to a gcd(a',b') with $\| a' \|,\| b' \| \leq$ min($\| a' \|,\| b' \|)$\\
 	R = $\K[X]$\\
 	At every step, deg r$_i$ decreases by at least 1\\
-	Goes from min($\parallel a \parallel,\parallel b \parallel$) to $\parallel gcd(a,b)\parallel$\\
+	Goes from min($\| a \|,\| b \|$) to $\| gcd(a,b)\|$\\
 	R = $\Z$\\
 	\begin{claim}[Lamé]
 		After the beginning and as long as a,b$\neq$ 0, in two steps max(a,b) decreases at least by a factor of 2.
@@ -401,12 +401,227 @@ $\parallel x \parallel := \log_2(1+|x|),x\in\Z\\
 		then $r_k$ = max($r_k,r_{k+1}) \leq 1/2$ max($r_{k+2},r_{k+1})$ = $r_{k+1}$\\
 		Same for $r_{k+1} \geq r_k/2$\\
 		$r_{k+2} \leq r_k - r_{k+1}$ as q$_k \geq 1$\\}
-	Goes from min($\parallel a \parallel,\parallel b \parallel$) to $\parallel gcd(a,b)\parallel$ 2 steps by 2 steps
+	Goes from min($\| a \|,\| b \|$) to $\| gcd(a,b)\|$ 2 steps by 2 steps
 }
 
 \Rem{}{}{This bound is sharp for consecutive Fibonacci number}
 
 \subsubsection{Bitcomplexity}
-\Thm{?}{}{Let A = max($\parallel a \parallel,\parallel b \parallel$), B = min($\parallel a \parallel,\parallel b \parallel$), D = $\parallel gcd(a,b)\parallel$\\
+\Thm{?}{}{Let A = max($\| a \|,\| b \|$), B = min($\| a \|,\| b \|$), D = $\| gcd(a,b)\|$\\
 	The overall complexity of Euclidean algorithm is O((B+1)(A-D+1))}
+
+\Rem{}{}{This is better than what we might have expected, which would be O(B-D) steps of cost O(AB)}
+The point is that \begin{itemize}
+	\item either a division is costly, but then a,b are reduced a lot (so fewer steps)
+	\item or we do many steps but the divisions are cheap
+\end{itemize}
+
+\Proof{
+	$r_{i-1} = q_ir_i + r_{i+1}$\\
+	Costs : $O(\|q_i \| \| ri \|) = O((\|r_{i-1}\| - \|r_i \| + 1)\|r_i\|)$ (+1 comes from the difference between $\|r_i\|$ and deg($r_1$))\\
+	
+	Total cost:
+	\begin{align*}
+		&O(\sum\limits_{i = 0}^{\#\text{steps}} (\|r_{i-1} \| - \|r_i\| + 1)\|r_i\|) & \|r_i\| \leq \|r_1\| = B\\
+		=& O(B(\sum\limits_{i = 0}^{\#\text{steps}} \|r_{i-1} \| - \|r_i\| + 1))\\
+		=& O(B(\#\text{steps}+1 + \|r_0\| - \|r_{\#\text{steps}}\|)) &\#\text{steps} \leq B-D, \|r_0\| = A, \|r_{\#\text{steps}}\| = D\\
+		=& O(B(A-2D+B+1))
+	\end{align*}
+	
+	proving that this is O((B+1)(A-D + 1)) is left as an exercise (the B+1 comes from neglecting possible an inversion at the first step, otherwise : use $B-D \leq A-D$ so $A-2D+B = O(A-D)$}
+
+\Rem{}{}{One can prove that, for random inputs, a,b, Pr(given $q_i = k) \approx 1/k^2$\\
+	As a consequence, it might sometimes be better to use successive subtractions than division in Euclid}
+
+\subsection{Binary algorithm}
+Give it for $\Z$\\
+Easy to turni it into a $\K[X]$ algo by letting X paly the role of 2.
+
+Idea: if x = $2^{v(x)}x'$, y = $2^{v(y)}y'$ with x',y', odd\\
+$\gcd(x,y) = 2^{min(v(x),v(y))}\cdot\gcd(x',y')$\\
+Say $x'\geq y'\geq 0$,\\
+gcd(x',y') = gcd(y',x'-y') = gcd(y',$\frac{x'-y'}{2^{v(x'-y')}}$)\\
+Continue until y' = 0, return $x'\cdot 2^{min(v(x),v(y)}$\\
+
+Analysis: \begin{itemize}
+	\item \# steps: at every step, xy decreases by $\leq 2$, so, \# steps $\leq \|xy\| = O(max(\|x\|,\|y\|))$
+	\item One step is a subtraction with linear cost:\begin{itemize}
+		\item over $\K[X]$ cost O(min($\|x\|,\|y\|))$ by doing in place
+		\item over $\Z$ cost O(max($\|x\|,\|y\|))$
+	\end{itemize}
+	Similar quadratic complexity
+	
+\subsection{Extended Euclidean algorithm}
+Purpose: Given a,b find d = gcd(a,b), u,v with au+bv = d\\
+Caution: Exists over $\Z,\K[X]$ (over a PiD = principal ideal domain (fr = anneau principal))\\
+
+$r_{i-1} = q_ir_i + r_{i+1}$ can be seen as\\
+$\begin{pmatrix}
+	r_i\\r_{i+1}
+\end{pmatrix}
+=
+\begin{pmatrix}
+0 & 1\\ 1 & -q_i
+\end{pmatrix}
+\begin{pmatrix}
+r_{i-1} \\ r_i
+\end{pmatrix}$\\
+
+So: $\begin{pmatrix}
+\gcd(a,b)\\0
+\end{pmatrix}
+=
+\begin{pmatrix}
+u_k & v_k\\ u_{k+1} & v_{k+1}
+\end{pmatrix}
+\begin{pmatrix}
+a \\ b
+\end{pmatrix}$\\
+
+$u_ka+v_kb = \gcd(a,b)$\\
+
+Compute the product on the fly from right to left.\\
+\begin{align*}
+M_0 = & \begin{pmatrix}
+0 & 1\\ 1 & 0
+\end{pmatrix}\\
+M_j = & \begin{pmatrix}
+u_j & v_j\\ u_{j+1} & v_{j+1}
+\end{pmatrix}\\
+\text{with } M_{j+1} = & \begin{pmatrix}
+0 & 1\\ 1 & -q_{j+1}
+\end{pmatrix}
+M_j
+\end{align*}
+
+which gaves $\left\{\begin{array}{r c l r}
+u_{i+1} & = & u_{i-1} - q_iu_i & (\star)\\
+v_{i+1} & = & v_{i-1} - q_iv_i
+\end{array}\right .$
+\end{itemize}
+
+\begin{claim}
+	$\forall i, u_ia+v_ib=r_i$
+\end{claim}
+\Rem{}{}{$u_0,v_0$ small $\rightsquigarrow$ $u_k,v_k$ large\\
+	$r_0,r_1$ large $\rightsquigarrow$ $r_k$ small}
+
+More formally: I claim $\deg(u_ia) = \deg(v_ib)$ for $i\geq 2$ as $\left[\begin{array}{r c c cl}
+\deg(r_i) & < & \deg(a) & \leq & \deg(u_ia)\\
+\deg(r_i) & < & \deg(a) & \leq & \deg(v_ib)
+\end{array}\right.$\\
+So $\deg u_i + \deg a = \deg v_i + \deg b$\\\\
+I claim that $\deg u_{i+1} = \deg u_i + \deg q_i$ (follows from ($\star$) and $\deg u_i \nearrow$ for $i \geq 2$)\\
+But $q_i =$ quotient$(r_{i-1},r_i)$, so $\deg q_i = \deg(r_{i-1}) - \deg(r_i)$\\
+So \begin{align*}
+	\deg u_{i+1} = \deg u_i + & \deg r_{i-1} - \deg r_i\\
+	\deg u_{i+1} + \deg r_i = & \deg u_i + \deg r_{i-1}\\
+	= & \text{ constant not depending on i}
+\end{align*}
+ 
+\begin{claim}
+	$u_iv_{i+1} - u_{i+1} v_i = (-1)^i$
+\end{claim}
+This is because $\det(M_i) = \begin{pmatrix}
+0 & 1 \\ 1 & -q_i
+\end{pmatrix} \det(M_{i-1})$ and $\det M_0 = 1$
+
+\subsection{Quasilinear (a.k.a. "Fast") GCD}
+\Lem{}{}{Say u,v,u',v' $\in \Z^4 \setminus \{0,0,0,0\}$\\such that $\left\{\begin{array}{r c l}
+	\alpha & = & ua + vb\\
+	\beta & = & u'a + v'b
+	\end{array}\right.$, $|uv'-u'v| = 1$\\
+	Then gcd$(\alpha,\beta) = \gcd(a,b)$}
+\Proof{Obviously, $\begin{array}{c}
+		\gcd(a,b)\mid\alpha\\
+		\gcd(a,b)\mid\beta
+	\end{array} \implies \gcd(a,b)\mid\gcd(\alpha,\beta)$\\
+	
+	$\begin{pmatrix}
+		\alpha\\\beta
+	\end{pmatrix}
+	= \begin{pmatrix}
+		u&v\\u'&v'
+	\end{pmatrix}
+	\begin{pmatrix}
+	a\\b
+	\end{pmatrix}$\\
+	
+	But$\begin{pmatrix}
+	u&v\\u'&v'
+	\end{pmatrix}
+	= \frac{1}{u'v-uv'}
+	\begin{pmatrix}
+	v'&-v\\-u'&u
+	\end{pmatrix}
+	= \pm \begin{pmatrix}
+	v'&-v\\-u'&u
+	\end{pmatrix}$\\
+	
+	So 	$\begin{pmatrix}
+	a\\b
+	\end{pmatrix}
+	= \pm \begin{pmatrix}
+	v'&-v\\-u'&u
+	\end{pmatrix}
+	\begin{pmatrix}
+	\alpha\\\beta
+	\end{pmatrix}$ which by the sale argument as before, implies $gcd(\alpha,\beta)\mid\gcd(a,b)$
+		}
+		
+Let's try to do a fast algorithm for GCD, EEA (Extended Euclidean Algorithm)\\
+We're going to mimic recursively division.\\
+deg a, deg b = 2n\\
+$a = a_{hi}X^n + a_{lo}\\
+b = b_{hi}X^n + b_{lo}$\\
+Recursive call on $a_{hi},b_{hi}\hookrightarrow \gcd(a_{hi},b_{hi})$\\
+
+Let's assume everything is "generic", then gcd($a_{hi},b_{hi}) \approx 1$\\
+So deg x, deg y, deg x', deg y' $\approx$ n\\
+
+Now, gcd(a,b) = gcd(ax+by,ax'+by') (Lemma + Claim)\\\\
+ax'+by' = $(a_{hi}x'+b_{hi}y')X^n + a_{lo}x' + b_{lo}y'$\\\\
+FAILURE: started with a,b of degree 2n, went to ax+by, ax'+by' of degree 2n\\
+
+Diagnosis: Need a better balance between the two terms\\
+
+Define HalfGCD(a,b) $\rightarrow \begin{pmatrix}
+x & y\\x' & y'
+\end{pmatrix}$ s.t deg x,y,x',y' $\approx$ n (instead of 2n), deg ax+by, ax'+by' $\approx$ n (insteal of $\Theta$\textbf{???})\\
+
+Do HalfGCD recursively\\
+Let $\begin{pmatrix}
+x_h&y_h\\x'_h&y'_h
+\end{pmatrix} = $HalfGCD$(a_{hi},b_{hi})$\\
+Then deg $x_h,y_h,x'_h,y'_h \approx n/2, \deg a_{hi}x_h+b_{hi}y_h \approx n/2, \deg a_{lo} x_h + b_{lo} y_h \approx 3n/2$, so deg  $ax_n + by_n \approx 3n/2$\\\\
+$\begin{pmatrix}
+x_l&y_l\\x'_l&y'_l
+\end{pmatrix} \leftarrow \text{HalfGCD}(a'_{hi},b'_{hi})$
+
+\begin{claim}
+	$\begin{pmatrix}
+	u&v\\u'&v'
+	\end{pmatrix}
+	=
+	\begin{pmatrix}
+	x_l&y_l\\x_l'&y'_l
+	\end{pmatrix}
+	\begin{pmatrix}
+	x_h&y_h\\x_h'&y'_h
+	\end{pmatrix}$
+\end{claim}
+
+Then $\left\{\begin{array}{r c l}
+\deg au+bv & \approx & n\\
+\deg au'+bv' & \approx & n\\
+\deg u,u',v,v' & \approx & n
+\end{array}\right .$\\
+So HalfGCD(a,b) returns $\begin{pmatrix}
+u&v\\u'&v'
+\end{pmatrix}$\\\\
+
+To sum up, HalfGCD(a,b), deg a,b = 2n reduces to 2 calls HalfGCD($a_{hi},b_{hi})$, HalfGCD($a_{lo},b_{lo})$ of degree n + a bunch of degree n multiplications.\\
+So HG(2n) = 2HG(n) + O(M(n)) $ \implies$ HG(n) O(M(n)) if M(n) = n$^\alpha$, O(M(n)log n) if M(n) = n(log n)$^\beta$
+
+Then GCD(a,b) $->$ . . .
 \end{document}
