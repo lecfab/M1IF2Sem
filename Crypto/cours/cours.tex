@@ -735,4 +735,33 @@ Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF with $n$ polynomial i
 \item Extended CBC-MAC allows variable length messages.
 \end{itemize}
 
+\subsection{Chosen Cipher Attack security}
+\Def{CCA security}{def:CCAsecure}{A symmetric encryption scheme $(Keygen,Enc,Dec)$ is CCA secure if no PPT algorithm $\A$ adversary can win the following gamie more than negligible advantage:
+
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node	[]	at 	(0,6)	{Challenger};
+\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
+\node	[]	at	(0,4.5)	{$k\leftarrow Keygen(1^\lambda)$};
+
+\draw	[->]	(1.5,4.5)	--node[above]	{$1^\lambda$}	(4.5,4.5);
+\draw	[->]	(4.5,3.5)	--node[above]	{$M_0,M_1$}		(1.5,3.5);
+\draw	[->]	(1.5,2.5)	--node[above]	{$c^*=Enc(k,M_b)$}	(4.5,2.5);
+
+
+\node	[]	at (6,2) {Repeat $q$ times};
+\draw [-] (5,1.8) -- (5,0.3);
+
+\draw	[->]	(4.5,1.5)	--node[above]	{$c_i$}		(1.5,1.5);
+\draw	[->]	(1.5,0.5)	--node[above]	{$Dec(k,c_i)$}	(4.5,0.5);
+
+\node [] at (0,0.5) {if $c_i=c^*$ then abort};
+
+\draw	[->]	(4.5,-1.5)	--node[above]	{$b'$}		(1.5,-1.5);
+\end{tikzpicture}
+\end{center}
+
+where $Adv_\A=|\Pr(\A\rightarrow 1|b=1)-\Pr(\A\rightarrow 1|b=0)|$}
+
 \end{document}
