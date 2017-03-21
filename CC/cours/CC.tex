@@ -477,22 +477,88 @@ Language TQBF is the set of QBF that evaluate to true
 		So TQBF $\in$ PSPACE\\
 	\end{itemize}
 
-\item TQBF is PSPACE-hard\\
+\item TQBF is PSPACE-hard (sketch)\\
 A $\in$ PSPACE M decides A in space S(n)\\
 Objective: A$\leq_p$TQBF\\
 x $\mapsto \Psi_x$\\
 Use configuration graph G$_{M,x}$
 M accepts $\leftrightarrow$ there exists a path in G$_{M,x}$ from c$_0$ to accepting config
-\end{itemize}
+\end{itemize}}
 
 \Rem{}{}{\#vertices in G$_{M,x}$ is $2^{O(S(n))} \rightarrow$ cannot have a variable for each vertex}
 	
 Variable in formula:
 	Configuration variable = a set of variables, an assignment corresponds to a config
 	\begin{itemize}
-		\item $e_q \in \{0,1\}$ is state of machine q ?
-		\item is head at position i on tape r ?
-		\item $c_i^r$ value of tape r at postion i ? (alaphbet for work tape is \{0,1\})
+		\item $e_q \in \{0,1\}$ is state of machine q
+		\item is head at position i on tape r
+		\item $c_i^r$ value of tape r at postion i (alphabet for work tape is \{0,1\})
 	\end{itemize}
-\dots}
+	
+\Proof{~\\
+\begin{itemize}
+	\item TQBF is PSPACE-hard (real),\\ A $\in$ PSPACE A computed by M with space S(n)\\
+	Objective: $x \mapsto \Psi^x$, $x \in A \Leftrightarrow \Psi^x$ is true\\\\
+	Variables:\\
+	Configuiration variable = $e_q, p_i^r, c_i^r$ for state, head, and symbol at position i, on tape r.\\
+	We will construct $\Psi_0(u,v) =$ true if config variable u = config var v, or there is an edge from u to v in config graph $G_{M,x}$\\
+	$\Psi_0(u,v) = ((e_1(u) = e_1(v)) \wedge (e_2(u) = e_2(v)) \wedge ...) \vee[\bigwedge\limits_{q,q' \in Q} \bigwedge\limits_{i_1 = 1}^{|x|} \bigwedge\limits_{i_2 = 1}^{S(|x|)} \bigwedge\limits_{\gamma_1,\gamma_2} ([e_q(u) \wedge p_{i_1}^1(u) \wedge p_{i_2}^2(u) \wedge (x_{i_1} = \gamma_1) \wedge (c_{i_2}^2 = \gamma_2)] \implies [e_{q'}(v)\wedge p_{i_1+D_1}^1(v)\wedge p_{i_2+D_2}^2(v)\wedge(c_{i_2}(v)=\gamma_2)])]$\\\\
+	$x \in A \Leftrightarrow$ there is a path from $C_0$ (initial config) to an accepting one of length $2^{O(S(n))}$\\\\
+	$\Psi_i(u,v) = $ true if there is a path from u to v of length $\leq 2^i$:\\
+	$\Psi_{i+1}(u,v) = \exists w \Psi_i(u,w)\wedge\Psi_i(w,v)\\\\
+	\Psi^x = \exists z ((e_{q_accept}(z) = 1 )\wedge \Psi_{cS(n)}(c_0,z))$\\
+	
+	We have that $\Psi^x$ true $\Leftrightarrow x \in A$. Problem : $|\Psi_i| = |\Psi_{i-1}| + |\Psi_{i-1}| + 1 \implies |\Psi_i| \geq 2^{cS(n)}$\\
+	
+	Trick: $\Psi_{i+1}(u,v) = \exists w \forall(z,y)((z=u)\wedge(y=w))\vee((z=w)\wedge(y=v)) \implies \Psi_i(z,y))$\\
+	In this case: $|\Psi_i| = $ poly$(S(n))$. Moreover, $\Psi^x$ can be computed in polytime in $|x|$.
+\end{itemize}
+}
+	
+\Rem{}{}{If A$\in$NPSPACE instead: Only difference: config graph can have 2 outgoing edges $\rightarrow$ modify $\Psi_0$ slightly $\implies$ TQBF is NPSPACE-hard. So PSPACE = NPSPACE.}
+
+More generally (Savitch theorem)
+\Thm{Savitch}{}{For a space constructible S(n), NSPACE(S(n)) $\subseteq$ DSPACE(S(n)$^2$)}
+\Proof{(sketch)\\
+	A$\in$NSPACE(S(n))\\
+	Config graph $G_{M,x}$ of size $2^{O(S(n))}$
+	REACH?(u,v,i) (= yes if there is a path from u to v of length $\leq 2^i$)\\
+		If i = 0, check u -> v\\
+		For all w\\
+			If(REACH?(v,w,i-1) and REACH?(w,v,i-1))\\
+				Accept\\
+		Reject\\\\
+Space(i)$\leq$Space(i-1) + O(S(n)) (-> keep w)
+Spcae(c(S(n))) = O(S(n)$^2$)
+	}
+	
+\Rem{}{}{Time(i) $\leq$ Time(i-1)$\cdot2^{cS(n)}$\\
+	Time(S(n))$\leq 2^{cS(n)^2} = N^{O(\log N)}$ if N = $2^{cS(n)}$}
+	
+Consequence:
+
+NPSPACE = PSPACE. L $\subseteq$ NL $\subseteq$ DSPACE(log$^2$n)
+
+\subsubsection{Class NL}
+\Def{}{}{A language B is NL-hard if for any A $\in$ NL, A $\leq_L$ B (meaning there exists a function f computable in logspace such that $x\in A \Leftrightarrow f(x)\in B$}
+
+PATH: Input: Directed graph G = (V,E) and s,t $\in$ V\\
+Output: yes if path from s to t in G\\\\
+
+\Thm{}{}{PATH is NL-complete}
+\Proof{\begin{itemize}
+		\item PATH$\in$NL -> see tutorial
+		\item PATH is NL-hard. $G_{N,x} = (N_x,E_x)$\\
+		Let A $\in$ NL. There is a NDTM N in sapce O(log n). Let $G_{N,x}$ config graph. $x\in A \Leftrightarrow$ there is a path from $c_0$ to accepting config in $G_{N,x}$
+	...
+	\end{itemize}}
+
+Big questions: \begin{itemize}
+	\item NP vs coNP
+	\item NL vs coNL
+	\item NPSPACE vs coNPSPACE
+\end{itemize}
+(coNL = \{A$|$there is a NDTM N in logspace, $x\in A \Leftrightarrow$ all path in N(x) accept\})\\
+
+\Thm{Immermann-Syclepyeni 87}{}{Nothing yet.}
 \end{document}
