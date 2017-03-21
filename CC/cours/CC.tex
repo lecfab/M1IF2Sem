@@ -547,10 +547,12 @@ Output: yes if path from s to t in G\\\\
 
 \Thm{}{}{PATH is NL-complete}
 \Proof{\begin{itemize}
-		\item PATH$\in$NL -> see tutorial
+		\item PATH$\in$NL $\rightarrow$ see tutorial
 		\item PATH is NL-hard. $G_{N,x} = (N_x,E_x)$\\
-		Let A $\in$ NL. There is a NDTM N in sapce O(log n). Let $G_{N,x}$ config graph. $x\in A \Leftrightarrow$ there is a path from $c_0$ to accepting config in $G_{N,x}$
-	...
+		Let A $\in$ NL. There is a NDTM N in sapce O(log n). Let $G_{N,x}$ config graph. $x\in A \Leftrightarrow$ there is a path from $c_0$ to accepting config in $G_{N,x}$\\
+		Reduction: construct a graph $G'_x = (V_x\cup\{t\},E_x\cup E'_x)$ with $E'_x = \{(z,t)|z$ accepting$\}$\\
+		Clearly, $x\in A \Leftrightarrow G'_x$ has a path from $c_0$ to t.\\
+		To construct $G'_x$ in logspace, write all possible u,v$\in \{0,1\}^{c\log(n)}$ and check whether there is a valid transition from u to v by simulating N.
 	\end{itemize}}
 
 Big questions: \begin{itemize}
@@ -560,5 +562,5 @@ Big questions: \begin{itemize}
 \end{itemize}
 (coNL = \{A$|$there is a NDTM N in logspace, $x\in A \Leftrightarrow$ all path in N(x) accept\})\\
 
-\Thm{Immermann-Syclepyeni 87}{}{Nothing yet.}
+\Thm{Immerman-Szelepcs\'enyi 87}{}{Nothing yet.}
 \end{document}
