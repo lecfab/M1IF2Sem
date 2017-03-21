@@ -623,5 +623,23 @@ u&v\\u'&v'
 To sum up, HalfGCD(a,b), deg a,b = 2n reduces to 2 calls HalfGCD($a_{hi},b_{hi})$, HalfGCD($a_{lo},b_{lo})$ of degree n + a bunch of degree n multiplications.\\
 So HG(2n) = 2HG(n) + O(M(n)) $ \implies$ HG(n) O(M(n)) if M(n) = n$^\alpha$, O(M(n)log n) if M(n) = n(log n)$^\beta$
 
-Then GCD(a,b) $->$ . . .
+GCD(a,b) (d° 2n):\\
+HalfGCD(a,b) $\rightarrow \begin{pmatrix}
+u&v\\u'&v'
+\end{pmatrix}$\\
+such that d°(au+bv) $\approx$ d°(au'+bv') $\approx$ n, gcd(au+bv,au'+bv') = gcd(a,b)\\\\
+Recursive GCD(au+bv,au'+bv') (d° n)\\
+
+Cost: G(2n) = HG(2n) + G(n) + O(M(n))\\
+G(2n) = O(HG(2n))
+
+\Rem{}{}{over $\Z[X]$ or $\K[X,Y]$}
+
+\Lem{Gauss Lemma}{}{Let R = $\Z[X]$ or $\K[X,Y]$.\\
+	Define P = $\sum\limits_{i=0}^n p_iX^i$ (where $p_i \in \K[X]$ if $R = \K[X,Y])$\\
+	Q =  $\sum\limits_{i} q_iX^i$\\
+	cout(P) = gcd(($p_i)_{0\leq i\leq n}$)\\
+	Then cout(gcd(P,Q)) ) gcd(cout(P),cout(Q))}
+
+\Ex{}{}{P = 2+4X+6X$^2$+2X$^3$, cout(P) = 2}
 \end{document}
