@@ -15,6 +15,7 @@
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{amssymb}
+\usepackage{latexsym}
 \usepackage{mathrsfs}
 \usepackage{amsfonts}
 \usepackage{multicol}
@@ -474,5 +475,94 @@ La preuve se fait en deux parties, poser les notions générales et l'adaptation
 \end{proof}
 
 \subsection{Correspondance de Curry-Howard.}
+CF notes en ligne.
 
+\section{Polymorphisme}
+Jusque là on peut résumer à la situation au tableau suivant :
+\begin{center}
+\begin{tikzpicture}
+\node at (0,6) {Programmation};
+\node at (0,5.5) {$\lambda$-calcul};
+\node at (0,5) {$\lambda$-calcul enrichi};
+\node at (0,4) {Calcul de combinateurs};
+
+\node at (3,6) {Théorie des types};
+\node at (3,5.5) {$\lambda_\rightarrow$};
+\node at (3,5) {$\lambda_{\rightarrow,\times,\bot,\top,...}$};
+\node at (3,4.5) {$\lambda_\alpha$};
+
+\node at (6,6) {Raisonnement};
+\node at (6,5.5) {$NT(\Rightarrow)$};
+\node at (6,5) {$NP$};
+\node at (6,4.5) {$NK$};
+\node at (6,4) {Systèmes à la Hilbert (1900)};
+\end{tikzpicture}
+\end{center}
+
+On va introduire le système $F$ en se séparant dans un premier temps du raisonnement puis on quittera aussi le point de vue programmation pour garder la théorie des types comme cœur (partie suivante).
+
+\subsection{Motivations}
+Prenons quelques exemples : 
+\begin{itemize}
+\item L'identité : pour tout type $T$, dans $\lambda_\rightarrow$, on a alors $\vdash \lambda x.x:T\rightarrow T$. On a rien a gagner à fixer le type $T$. Ce qui est important c'est que ça soit la même chose des deux côtés. On aimerait que l'identité soit "polymorphe", donner à l'identité un type polymorphe du genre $\vdash \lambda x.x:\forall T, T\rightarrow T$.
+\item Entier de Church : par exemple, $\overline{2}\equiv\lambda xf. f\ (f\ x)$. On a donc dans $\lambda_\rightarrow$, $\vdash\overline{2}:A\rightarrow (A\rightarrow A)\rightarrow A$. De même cela est vrai pour tout type $A$, il faudrait donc aussi un type polymorphe.
+\item $\Delta\equiv\lambda x.x\ x$. Ce terme est en forme normale et il est clos. Supposons qu'on puisse lui donner une type $T$, par inversion de $\rightarrow_I$ on a que $T=U\rightarrow V$ et $x:U\vdash x\ x:V$ puis par inversion de $\rightarrow_E$, $x:U\vdash x: W\rightarrow V$ et $x:U\vdash x: W$, puis $U\equiv W\rightarrow V$ et $U\equiv W$ donc $W\equiv W\rightarrow V$ ce qui n'a pas de solution, a priori, typiquement si $x$ est polymorphe, on pourrait arriver à typer $\Delta$.
+\end{itemize}
+
+\underline{Observations :}\begin{itemize}
+\item On veut donner à un terme "plusieurs types" d'un seul coup.
+\subitem en C on a les templates,
+\subitem en OCaml on a les types $'a$.
+\item On peut avoir besoin de gérer plusieurs occurrences d'une même variable.
+
+\item observation de J.Rupolds (74)
+
+\item introduit par JY.Girard (70) (cadre logique). 
+\end{itemize}
+
+\subsection{Système $F$ à la Church}
+On veut une généralisation (d’abstraction) sur les types :
+\[T::=X\in\X|T\rightarrow T|\forall X,T\]
+Il nous faudra aussi une règle d'instanciation de types : $\forall X.T \leadsto T\brakets{S/X}$.
+
+On va donc avoir une conséquence sur les termes:
+\[t::= x\in\mathcal{X}|\lambda x.t| t\ t|\wedge X.t| t\ T\]
+
+Il nous faudra aussi une règle $\forall_I$ et $\forall_E$.
+
+\[\begin{array}{r l}
+\rRule{\forall_I}{\Delta\vdash t:T\ \ X\notin FT(\Delta)}{\Delta\vdash \wedge X.t:\forall X,T} & \rRule{\forall_E}{\Delta\vdash t:\forall X,T}{\Delta\vdash t\brakets{S/X}: T\brakets{S/X}}
+\end{array}\]
+
+
+Remarquons qu'il faut de la règle $(\rightarrow_I)$ doivent encore porter l'information sur les types ($\lambda x^S...$).
+
+Revenons donc aux exemples, \begin{itemize}
+\item Pour l'identité : $\vdash_{Church}\wedge X.\lambda x^X.x:\forall X,X\rightarrow X$
+\item Pour les entiers de Church : $\vdash_{Church}\wedge X.\lambda x^X.\lambda f^{X\rightarrow X}. f\ (f\ x):\forall X, X\rightarrow (X\rightarrow X)\rightarrow X$.
+\item Pour $\lambda x. x\ x$. On a:
+
+\[\rRule{\rightarrow_I}{\rRule{}{\rRule{}{}{x:\forall X,S\vdash (x\ U):(V\rightarrow V)\rightarrow W}\ \ \ \rRule{}{}{x:\forall X,S\vdash x\ V:V\rightarrow V}}{x:\forall X,S\vdash x\ U\ (x\ V): W}}{\vdash \lambda x^{\forall X,S}. x\ U\ (x\ V):(\forall X,S)\rightarrow W}\]
+
+Prenons alors $S\equiv X\rightarrow X$ et on obtient:
+\[\rRule{\rightarrow_I}{\rRule{}{\rRule{}{}{x:\forall X,(X\rightarrow X)\vdash (x\ (Y\rightarrow Y)):(Y\rightarrow Y)\rightarrow (Y\rightarrow Y)}\ \ \ \rRule{}{}{x:\forall X,(X\rightarrow X)\vdash x\ Y:Y\rightarrow Y}}{x:\forall X,X\rightarrow X\vdash \wedge Y.x\ (Y\rightarrow Y)\ (x\ Y): \forall Y,(Y\rightarrow Y)}}{\vdash \lambda x^{\forall X,X\rightarrow X}. \wedge Y.x\ (Y\rightarrow Y)\ (x\ Y):(\forall X,X\rightarrow X)\rightarrow (\forall Y,Y\rightarrow Y)}\]
+\end{itemize}
+
+\subsection{Système $F$ à la Curry}
+On utilise des $\lambda$-termes purs et les même types que dans le système à la Church. On a toujours besoin des règle d'introduction et d'élimination de $\forall$.
+
+\[\begin{array}{r l}
+\rRule{\forall_I}{\Delta\vdash t:T\ \ \ X\notin FT(\Delta)}{\Delta\vdash t:\forall X,T} & \rRule{\forall_E}{\Delta\vdash t:\forall X,T}{\Delta\vdash t: T\brakets{S/X}}
+\end{array}\]
+
+On aimerait donc comme précédemment que $\vdash \lambda x.x\ x: (\forall X,X\rightarrow X)\rightarrow (\forall X,X\rightarrow X)$.
+
+\subsection{Aspects dynamiques}
+\subsubsection{A la Church}
+\begin{itemize}
+\item $(\lambda x^T.a)\ b\betaar a\brakets{b/x}$
+\item $(\wedge X.t)\ S\betaar t\brakets{S/X}$.
+\end{itemize}
+\subsubsection{A la Curry}
+Ici rien à signaler de très précis puisque les termes ne sont pas changés.
 \end{document}

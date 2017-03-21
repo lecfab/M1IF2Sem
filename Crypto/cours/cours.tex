@@ -683,7 +683,7 @@ The goal is to ensure data authentication and integrity (no manipulation, insert
 \end{itemize}}
 
 \Def{}{def:unforgeadapt}{A MAC is unforgeable under adaptive chosen-message attacks if no PPT adversary $\A$ has noticeable advantage in the following game:\begin{itemize}
-\item Challenger generates $k=Gen(1^\lambda)$ and initializes $Q=\emptyset$. Adversary is given $A^\lambda$.
+\item Challenger generates $k=Gen(1^\lambda)$ and initializes $Q=\emptyset$. Adversary is given $1^\lambda$.
 \item $\A$ has oracle acess to $MAC_k(\cdot)$, $\A$ chooses $m$, challenger return $t=MAC_k(m)$ and updates $Q\leftarrow Q\cup\{m\}$
 \item $\A$ outputs $(m^*,t^*)$ and wins if $Verif_k(m*,t*)=1$ and that $m^*\notin Q$.
 \end{itemize}}
