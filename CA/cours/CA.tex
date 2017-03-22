@@ -635,11 +635,160 @@ G(2n) = O(HG(2n))
 
 \Rem{}{}{over $\Z[X]$ or $\K[X,Y]$}
 
-\Lem{Gauss Lemma}{}{Let R = $\Z[X]$ or $\K[X,Y]$.\\
+\Lem{Gauss Lemma}{}{Let R = $\Z[X]$ or $\K[X,Y]$ (a UFD (anneau factoriel)).\\
 	Define P = $\sum\limits_{i=0}^n p_iX^i$ (where $p_i \in \K[X]$ if $R = \K[X,Y])$\\
 	Q =  $\sum\limits_{i} q_iX^i$\\
 	cout(P) = gcd(($p_i)_{0\leq i\leq n}$)\\
-	Then cout(gcd(P,Q)) ) gcd(cout(P),cout(Q))}
+	Then cout(gcd(P,Q)) = gcd(cout(P),cout(Q))}
 
 \Ex{}{}{P = 2+4X+6X$^2$+2X$^3$, cout(P) = 2}
+
+From our point of view:\\
+Given P,Q $\in \Z[X]$ or $\K[X,Y]$\begin{itemize}
+	\item Compute $R_0 = \gcd(P,Q)$ over $\Q[X]$ or $\K(Y)[X]$
+	\item clear the denomiators to get $R_1 \in \Z[X]$ or $\K[X,Y]$ with content 1 (multiply by the lcm of all denominators)\\
+	Note that lcm(a,b) = a.b/gcd(a,b)
+	\item Return $R_1\times\gcd($cout$(P),$cout$(Q)$
+\end{itemize}
+
+\subsubsection{Poor man's elimination}
+Say you have 2 curves $\left\{\begin{array}{r c l}
+P(X,Y) & = & 0\\
+Q(X,Y) & = & 0
+\end{array}\right.$
+
+Do EEA on P(X,Y), Q(X,Y) over $\K(Y)[X]$:\\
+U(X,Y)P(X,Y)+V(X,Y)Q(X,Y) = $\left\{\begin{array}{l}
+1\\
+\gcd(P(X,Y),Q(X,Y)
+\end{array}\right.$ where U,V $\in \K(Y)[X]$\\
+Say the gcd is 1 then, clearing the denominators, we get $\bar{U},\bar{V}\in\K[X,Y],W\in\K[Y]$, s.t\\
+$\bar{U}(X,Y)P(X,Y)+\bar{V}(X,Y)Q(X,Y) = W(Y)$\\
+
+Say ($x_0,y_0$) is a solution of the system above, then $W(y_0) = 0$
+
+\subsection{Polynomial interpolation \& evaluation}
+\subsubsection{Evaluation}
+\underline{One point evaluation}\\
+
+The classical Horner scheme\\
+Input: U = $\sum_{i=0}^{d_u} u_iX^i$, a$\in\K$\\
+Output: U(a) = $(\dots((u_{d_u}a+u_{d_u-1})a + u_{d_u-2})a+\dots)+u_0$\\\\
+$r \leftarrow u_{d_u}$\\
+for i from $d_u-1$ downto 0, do $r \leftarrow a\cdot r+u_i$\\
+return r\\\\
+
+Cost: deg U multiplies, deg U adds\\
+
+\underline{Interlude-Product tree}\\
+Q: Given $x_1,\dots,x_n \in\K$, how do we compute $\prod\limits_{i=1}^{n}(X-x_i)$ and at what cost ?\\\\
+
+1st idea: $[\dots[[(X-x_1)(X-x_2)](X-x_3)]\dots]$\\
+We use: $\prod\limits_{i=1}^{n}(X-x_i) = \prod\limits_{i=1}^{n-1}(X-x_i) \times (X-x_n)$\\
+So $C(n) = C(n-1) + O(n) = O(n^2)$\\
+
+Better: \begin{itemize}
+	\item Compute $\prod\limits_{i=1}^{\lfloor n/2 \rfloor}(X-x_i) = Q_0(X)$
+	\item Compute $\prod\limits_{i=\lfloor n/2\rfloor+1}^{n}(X-x_i) = Q_1(X)$
+	\item Return $Q_0(X)Q_1(X)$
+\end{itemize}
+Cost: $\bar{C}(n) = 2 \bar{C}(n/2) + M(n/2) = O(M(n)\log(n))$\\
+or even $O(M(n))$ if M(n) = $n^\alpha, \alpha > 1$
+
+\underline{Multiple point evaluation}
+Say P has degree n-1 and we want $P(x_1),\dots,P(x_n)$\\
+
+Key remarks: $P(X) \equiv P(x_i) mod (X-x_i)$\\
+$X - x_i | P(X) - P(x_i)$ as $x_i$ is a root of $P(X) - P(x_i)$\\
+
+Formally, if n == 1, return P (which is a constant)\\
+Compute $P_0 = P \mod Q_0 = \prod\limits_{i=1}^{\lfloor n/2 \rfloor}(X-x_i)$\\
+$P_1 = P \mod Q_1 = \prod\limits_{i=\lfloor n/2\rfloor+1}^{n}(X-x_i)$\\
+
+Recursive evalutation of $P_0$ at $x_1,\dots,x_{\lfloor n/2\rfloor}$ and $P_1$ at $x_{\lfloor n/2\rfloor+1},\dots,x_n$\\
+
+Cost: \begin{itemize}
+	\item 1 product tree O(M(n)log n)
+	\item 2 divisions of size n by n/2 $\implies$ 2D(n/2)
+	\item Z recursive calls in size n/2
+\end{itemize}
+Overall, evaluation costs O(M(n)log n)\\
+
+What if deg P $\neq$ n-1 ?\\
+if deg P $>$ n-1\\
+Reduce to deg P = n-1 by doing $\tilde{P} = P mod Q$\\
+cost is O(M(n)log n) + division d by n, which is eother O(M(d)) (fast) or O(dn) (naive)\\
+
+d $<$ n: n/d times evaluations at d points $\rightarrow O(\frac{n}{d}M(d)\log d) \approx O(n \log^2d)$ with FFT (instead of O(n log$^2$n))
+
+\Rem{}{}{All those complexisties can be reduced to O(M(n)) if $x_i = \alpha^i$ for some $\alpha\in\K$}
+
+\Rem{}{}{Arithmetic analogue, take N$\in\Z$ large, $p_1,\dots,p_r$ primes, and we want $N \mod p_1,\dots,N \mod p_r$}
+
+\subsubsection{Interpolation}
+\underline{Lagrange formula}\\
+$L_i(X)$ polynomial $L(x_j) = \delta_{i,j}$\\
+
+General problem:\\
+Given $(x_i,y_i)_{1\leq i\leq n}$, find P(X) s.t $P(x_i) = y_i \forall i,\deg P \leq n-1$\\
+
+$P = \sum_{i = 1}^{n}y_i L_i(X)$\\
+Cost: each $L_i: O(n^2) or O(M(n)\log n)$, combinaison in $O(n^2)$, overall $O(n^3)$ or $O(n(M(n)\log n))$\\
+
+Better: compute Q(X) = $\prod\limits_{i=1}^{n}(X-x_i)$\\
+$L_i(X) = \frac{Q(X)}{(X-x_i)Q'(x_i)}$\\
+
+Note: $Q'(x_i) = \prod\limits_{k=1,k\neq i}^{n}(X-x_k)$\\
+
+Cost: Q(X): $O(n^2)$ or $O(M(n)\log n)$\\
+Q'($x_i$): $O(n^2)$ or $O(M(n)\log n)$\\
+One $L_i$ 1 division n by 1: O(n)\\
+Overall $O(n^2)$\\
+
+\underline{Newton (a.k.a divided differences) method}\\
+Let P be the interpolation polynomial which is sought. Write P(X) = $(X - x_n)Q(X) + c$ the Euclidean division of P by $X - x_n$, then c = $P(x_n)$. Thus, as $P(x_i) = y_i$, we have $Q(x_i)(x_i-x_n) = P(x_i) - P(x_n) = y_i - y_n$\\
+
+So $Q(x_i) = \frac{y_i - y_n}{x_i - x_n}, i < n$. Q is the solution of an interpolation problem of size n-1.\\
+
+Algorithm: Input: ($x_i,y_i)_{1\leq i \leq n}$\\
+If n==1 return $y_1$\\
+For i from 1 to n-1 do\\
+\indent$z_i \leftarrow \frac{y_i-y_n}{x_i-x_n}$\\
+Q $\leftarrow$ Interpolate($x_i,z_i)_{i \leq n-1}$
+Return (X-$x_n$)Q + $y_n$\\
+
+Cost: I(n) = I(n-1) + O(n) $\implies$ I(n) = O(n$^2$)
+
+\underline{Fast interpolation}
+Lagrange:\begin{align*}
+P(X) & = \sum\limits_{i = 1}^n \frac{Q(X)}{(X-x_i)} \frac{y_i}{Q'(x_i)}\\
+& = \sum\limits_{i = 1}^{\lfloor n/2 \rfloor}\frac{Q(X)}{(X-x_i)} c_i + \sum\limits_{i = \lfloor n/2 \rfloor+1}^{n}\frac{Q(X)}{(X-x_i)} c_i\\
+& = Q_1(X)\sum\limits_{i = 1}^{\lfloor n/2 \rfloor}\frac{Q_0(X)}{(X-x_i)} c_i + Q_0(X)\sum\limits_{i = \lfloor n/2 \rfloor+1}^{n}\frac{Q_1(X)}{(X-x_i)} c_i
+\end{align*}
+
+Algorithm:
+Input: $(x_i,c_i)$ + product tree for Q(X)\\
+If i == 1, return $c_i$\\
+$R_0(X)$ = Recursive call $(x_i,c_i)_{i \leq \lfloor n/2 \rfloor}$ + product tree for $Q_0(X)$\\
+$R_1(X)$ = Recursive call $(x_i,c_i)_{i > \lfloor n/2 \rfloor}$ + product tree for $Q_1(X)$\\
+Return $Q_1(X)R_0(X)+Q_0(X)R_1(X)$\\
+
+Cost: \\
+$\begin{array}{c c}
+	$Product tree for $Q & O(M(n)log n)\\
+	Q' & O(n)\\
+	(Q'(x_i))_{1 \leq i \leq n-1} & O(M(n)log n)\\
+	(\frac{y_i}{Q'(x_i)})_{1 \leq i \leq n-1} & O(n)\\
+\end{array}$\\
++ algorithm on the left:
+
+C(n) = 2C(n/2) + 2M(n/2) + O(n), so C(n) = O(M(n)log n) and overall we have O(M(n)log n) cost.\\
+
+\Rem{}{}{Can be reduced to O(M(n)) if $x_i = \alpha^i, \alpha\in\K$\\}
+
+CRT (Chinese Remainder theorem)
+Input: a,m,b,n, m,n coprime\\
+Output: x s.t, $x \equiv a \mod m, x \equiv b \mod n$
+Return amu+bnv where mu+nv = 1
+Cost: same as EEA.
 \end{document}
