@@ -526,26 +526,26 @@ On veut une généralisation (d’abstraction) sur les types :
 Il nous faudra aussi une règle d'instanciation de types : $\forall X.T \leadsto T\brakets{S/X}$.
 
 On va donc avoir une conséquence sur les termes:
-\[t::= x\in\mathcal{X}|\lambda x.t| t\ t|\wedge X.t| t\ T\]
+\[t::= x\in\mathcal{X}|\lambda x.t| t\ t|\Lambda X.t| t\ T\]
 
 Il nous faudra aussi une règle $\forall_I$ et $\forall_E$.
 
 \[\begin{array}{r l}
-\rRule{\forall_I}{\Delta\vdash t:T\ \ X\notin FT(\Delta)}{\Delta\vdash \wedge X.t:\forall X,T} & \rRule{\forall_E}{\Delta\vdash t:\forall X,T}{\Delta\vdash t\brakets{S/X}: T\brakets{S/X}}
+\rRule{\forall_I}{\Delta\vdash t:T\ \ X\notin FT(\Delta)}{\Delta\vdash \Lambda X.t:\forall X,T} & \rRule{\forall_E}{\Delta\vdash t:\forall X,T}{\Delta\vdash t\brakets{S/X}: T\brakets{S/X}}
 \end{array}\]
 
 
 Remarquons qu'il faut de la règle $(\rightarrow_I)$ doivent encore porter l'information sur les types ($\lambda x^S...$).
 
 Revenons donc aux exemples, \begin{itemize}
-\item Pour l'identité : $\vdash_{Church}\wedge X.\lambda x^X.x:\forall X,X\rightarrow X$
-\item Pour les entiers de Church : $\vdash_{Church}\wedge X.\lambda x^X.\lambda f^{X\rightarrow X}. f\ (f\ x):\forall X, X\rightarrow (X\rightarrow X)\rightarrow X$.
+\item Pour l'identité : $\vdash_{Church}\Lambda X.\lambda x^X.x:\forall X,X\rightarrow X$
+\item Pour les entiers de Church : $\vdash_{Church}\Lambda X.\lambda x^X.\lambda f^{X\rightarrow X}. f\ (f\ x):\forall X, X\rightarrow (X\rightarrow X)\rightarrow X$.
 \item Pour $\lambda x. x\ x$. On a:
 
 \[\rRule{\rightarrow_I}{\rRule{}{\rRule{}{}{x:\forall X,S\vdash (x\ U):(V\rightarrow V)\rightarrow W}\ \ \ \rRule{}{}{x:\forall X,S\vdash x\ V:V\rightarrow V}}{x:\forall X,S\vdash x\ U\ (x\ V): W}}{\vdash \lambda x^{\forall X,S}. x\ U\ (x\ V):(\forall X,S)\rightarrow W}\]
 
 Prenons alors $S\equiv X\rightarrow X$ et on obtient:
-\[\rRule{\rightarrow_I}{\rRule{}{\rRule{}{}{x:\forall X,(X\rightarrow X)\vdash (x\ (Y\rightarrow Y)):(Y\rightarrow Y)\rightarrow (Y\rightarrow Y)}\ \ \ \rRule{}{}{x:\forall X,(X\rightarrow X)\vdash x\ Y:Y\rightarrow Y}}{x:\forall X,X\rightarrow X\vdash \wedge Y.x\ (Y\rightarrow Y)\ (x\ Y): \forall Y,(Y\rightarrow Y)}}{\vdash \lambda x^{\forall X,X\rightarrow X}. \wedge Y.x\ (Y\rightarrow Y)\ (x\ Y):(\forall X,X\rightarrow X)\rightarrow (\forall Y,Y\rightarrow Y)}\]
+\[\rRule{\rightarrow_I}{\rRule{}{\rRule{}{}{x:\forall X,(X\rightarrow X)\vdash (x\ (Y\rightarrow Y)):(Y\rightarrow Y)\rightarrow (Y\rightarrow Y)}\ \ \ \rRule{}{}{x:\forall X,(X\rightarrow X)\vdash x\ Y:Y\rightarrow Y}}{x:\forall X,X\rightarrow X\vdash \Lambda Y.x\ (Y\rightarrow Y)\ (x\ Y): \forall Y,(Y\rightarrow Y)}}{\vdash \lambda x^{\forall X,X\rightarrow X}. \Lambda Y.x\ (Y\rightarrow Y)\ (x\ Y):(\forall X,X\rightarrow X)\rightarrow (\forall Y,Y\rightarrow Y)}\]
 \end{itemize}
 
 \subsection{Système $F$ à la Curry}
@@ -561,7 +561,7 @@ On aimerait donc comme précédemment que $\vdash \lambda x.x\ x: (\forall X,X\r
 \subsubsection{A la Church}
 \begin{itemize}
 \item $(\lambda x^T.a)\ b\betaar a\brakets{b/x}$
-\item $(\wedge X.t)\ S\betaar t\brakets{S/X}$.
+\item $(\Lambda X.t)\ S\betaar t\brakets{S/X}$.
 \end{itemize}
 \subsubsection{A la Curry}
 Ici rien à signaler de très précis puisque les termes ne sont pas changés.

@@ -721,7 +721,7 @@ In $PRF-Exp_0$ $O(m)=R(m)$ for each $m$ Then $\Pr(\B(1^\lambda=1|O=R)=\frac{1}{2
 
 Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF with $n$ polynomial in $\lambda$. Get the following MAC:\begin{itemize}
 \item $Gen(\lambda)$ chooses $k\hookrightarrow U(\bit^\lambda)$
-\item $Mac_k(m)$ given $m=(m_1...m_l)$ with $m_i\in\bit^n$ for all $i$.
+\item $CBCMac_k(m)$ given $m=(m_1...m_l)$ with $m_i\in\bit^n$ for all $i$.
 \subitem set $t_0=0^n$
 \subitem for $i=1$ to $l$, set $t_i=F(k,t_{i-1}\oplus m_i)$.
 \subitem output $t=t_l$.
@@ -731,9 +731,25 @@ Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF with $n$ polynomial i
 \Rem \begin{itemize}
 \item $t_0$ must be fixed. Taking a random $t_0=IV$ and sending $(t_0,t_l)$ is insecure ($\A$ can change $t_0$ and $m_1$ such that $t_0\oplus m_1$ is constant). 
 \item only $t_l$ is outputed (sending all of them is again insecure)
-\item if length not fixed in advance, it a;so becomes insecure, if $t_Mac_k(m)=F(k,m)$ then $t=Mac_k(m||t\oplus m)$. 
-\item Extended CBC-MAC allows variable length messages.
+\item if length not fixed in advance, it also becomes insecure, if $t_{Mac_k}(m)=F(k,m)$ then $t=Mac_k(m||t\oplus m)$. 
+\item Ecrypted CBC-MAC allows variable length messages.
 \end{itemize}
+
+\Thm{}{thm:CBCMACsecure}{If $F$ is a secure PRF, then the associated CBC-MAC with $l$ blocks is a secure MAC for message with exactly $l$ blocks.}
+
+\Thm{}{thm:CBCMACunsecure}{If one allows variable length messages, CBC-MAC is not a secure MAC.}
+
+\begin{proof}
+It is the third remark above.\\
+We give a possible attack: adversary ask for $m_1$ and gets $F_k(m_1)=t_1$. Then $((m_1||m_1\oplus t_1),t1)$ is a correct forgery.
+\end{proof}
+
+\paragraph{Encrypted CBC-MAC (ECBC-MAC)} We use $(k,k')$ two independent PRF keys as a key for the MAC. Then we have $ECBCMAC_{k,k'}(m_1||...||m_l)=F_{k'}(CBCMAC_k(m_1||...||m_l))$.
+
+\Thm{}{}{If there exists a PPT adversary $\A$ against ECBC-mAC based on the PRF $F$, then there exists a PPT adversary $\B$ against the PRF $F$ such that $Adv_\B^{PRF}\geq Adv_\A^{MAC}-\frac{2q^2}{2^m}$ where $q$ is the number of sign queries made by $\A$}
+
+In pratice ECBC-MAC based on AES is the default option.\\
+MACS are crucial for CCA-secure encryption: CPA-secure encryption scheme and a MAC can ensure CCA security.
 
 \subsection{Chosen Cipher Attack security}
 \Def{CCA security}{def:CCAsecure}{A symmetric encryption scheme $(Keygen,Enc,Dec)$ is CCA secure if no PPT algorithm $\A$ adversary can win the following gamie more than negligible advantage:
@@ -764,4 +780,110 @@ Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF with $n$ polynomial i
 
 where $Adv_\A=|\Pr(\A\rightarrow 1|b=1)-\Pr(\A\rightarrow 1|b=0)|$}
 
+
+\subsection{Conclusion}
+This is all for symetric cryptography for this course. We have seen :
+
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node at (0,3) {PRG};
+\node at (1.5,3) {$\Leftrightarrow$};
+\node at (3,3) {PRF};
+\node at (4.5,3) {$\Leftrightarrow$};
+\node at (6,3) {PRPermuations};
+
+\node at (0,1.5) {stream ciphers};
+\node at (2.25,1.75) {block};
+\node at (2.25,1.25) {ciphers};
+\node at (3.75,1.5) {Macs};
+
+\node at (3,0.5) {CCA-secure};
+\node at (3,0) {encryption};
+
+\draw [-] (1.5,0) -- (1.5,2.8);
+\draw [-] (4.5,0) -- (4.5,2.8);
+\end{tikzpicture}
+\end{center}
+
+We can show that all of that is equivalent to one-way functions. Proving that all of that implies one way function is easier, but the proof that one way functions implies PRG is trickier and uses locally decodable codes.
+
+\Def{}{def:oneway}{A one way function $f$ is a poly-time computable function such that for $a$ uniformly chosen in $Im\ f$, it is hard to compute $x$ such that $f(x)=a$: i.e for all PPR $\A$, $\Pr_y(A(y)\text{ returns $x$ such that } f(x)=y)$ is negligible.}
+
+\section{Cryptographic hash functions}
+Hash functions was a very hot topic until 2012 and aims to give control in cryptographic constructions. In the old days, there used to be two main hash functions, MD5 and SHA1. In in 2004-2005, Xiaoyum Wang broke MD5, SHA1 and lots of variants. Then NIST opened a competition. Keccack was selected as the standard and is now called SHA3.
+
+\subsection{Definition}
+\Def{Hash function}{def:hash}{A hash function is a deterministic poly-time function $h:D\rightarrow R$ with $|R|\ll|D|$}
+
+For example $D=\bit^*$ and $R=\bit^{256}$. By the pigeon-hole principle, there are a lot of collisions (distinct $x_1$ and $x_2$ such that $h(x_1)=h(x_2)$) but the aim is that finding them is hard.
+
+\Def{Collision resistance}{def:collisionResist}{The hash function $h:\begin{array}{r c l}
+\bit^n\times\bit^{l(n)}&\rightarrow&\bit^{l'(n)}\\
+(s,x) & \mapsto & h_s(x)
+\end{array}$ (where $s$ is the (public) key and $x$ the input) is said collision-resistant if for all PPT adversary $\A$:
+ \[\Pr(\A(s)\text{ outputs distincts $x$ and $x'\in\bit^{l(n)}$ such that $ h_s(x)=h_s(x')$})\leq negl(n) \]
+ 
+ \begin{itemize}
+ \item If $l(n)$ is finite then we speak of fixed-length input and we can $\frac{l(n)}{l'(n)}$ the compression factor
+ \item Otherwise we speak about variable-length input.
+ \end{itemize}}
+ 
+There exist weaker notions of security for hash functions:\begin{itemize}
+\item pre-image resistance: given $y$ we want finding $x$ such that $h_s(x)=y$ to be hard
+\item second pre-image resistance: given $x$ we wand finding $x'$ such that $h_s(x)=h_s(x')$ to be hard.
+\end{itemize}
+
+There is also a stronger notion of security: Random oracle model. It states how $h_s$ is different from a PRF $F_k$ with $s$ public and $k$ secret.
+
+\subsection{The birthday paradox}
+It is the best generic attack to find collisions.
+\Thm{}{}{Fix $R$ of cardinality $N$. Let $y_1,...,y_q$ sampled uniformly and independently in $R$. Then $\Pr(\exists i\neq j, i,j\leq q, y_i=y_j)\geq 1-\exp(-\frac{q(q-1)}{2N})$}
+
+\Rem it is also true if the $y_i$'s are iid, not necessarily uniformly  distributed.
+
+\begin{proof}
+Define the event $NoColl_i$ the event $y_1,...,y_i$ are distinct.
+\[\begin{array}{r c l}
+\Pr(NoColl)=\Pr(NoColl_n) &=& \Pr(NoColl_1)\prod_{i=1}^{q-1}\Pr(NoColl_{i+1}|NoColl_i)\\
+&=& 1\prod_{i=1}^{q-1}(1-\frac{i}{N})\\
+&\leq& \prod_{i<q}\exp(-\frac{i}{n})\\
+&\leq& \exp(-\sum_{i=1}^{q-1}\frac{i}{N})\\
+&\leq& \exp(-\frac{q(q-1)}{2N})
+\end{array}\]
+\end{proof}
+
+\subsection{Building hash functions}
+Merkle-Domgard from fixed length to variable length. Wlog one can assume that one have $h:\bit^{2n}\rightarrow\bit^n$. For input $x\in\bit^*$ we proceed as the following:\begin{itemize}
+\item if nedded, pas $x$ with $0$'s so that $|x|$ is a multiple of $n$.
+\item write $x=x_1||...||x_B$ with $x_i\in\bit^n$ for all $i$.
+\item define $x_{B+1}=|x|$ the bitlength of $x$. ($\log|x|\leq n$ then one can complete it such with useless $0$'s and get a word of length $n$.)
+\item set $z_0=0$ and $z_i=h_s(z_{i-1}||x_i)$
+\item outputs $H_s(x)=z_{B+1}\in\bit^n$.
+\end{itemize}
+
+\Thm{}{}{If $h_s$ is collision resistant then $H_s$ also.}
+\begin{proof}
+Assume we find $x\neq x'$ such that $H_s(x)=H_s(x')$ with $x=x_1||...||x_{B}$ and $x'=x'_1||..||x'_B$.
+
+If $|x|\neq |x'|$ then $h_s(z_B||x_{B+1})=h_s(z'_{B'}||x'_{B'+1})$ and  $z_B||x_{B+1}\neq z'_B||x'_{B'+1}$ since $x_{B+1}=|x|\neq|x'|=x'_{B'+1}$. Then we get a collision on $h_s$.
+
+Else, everything is public one can compute $z_B$ and $z'_B$ oneself from $x$ and $x'$. We now have $B=B'$ and $x_{B+1}=x'_{B+1}$. There is collision then $h_s(z_B||x_{B+1})=h_s(z'_{B}||x'_{B+1})$. If $z_B\neq z'_B$ it is done. Else continue as the previous and get the results otherwise $x=x'$.
+\end{proof}
+
+\Rem what matters is not the compression factor, but the compression factor per time unit. 
+
+Keccack: takes about 10 cycles per byte on a regular laptop.
+
+\paragraph{Heuristic construction} from block ciphers to hash functions:\\
+Davies-Meyer: $h(m_0||m_1)=Enc_{m_0}(m_1)\oplus m_1$\\
+Miyaguchi-Breneel : $h(m_0||m_1)=Enc_{m_0}(m_1)\oplus m_1\oplus m_0$
+
+\subsection{MACs based on hash functions.}
+Bad idea: $Sign_k(M)=h(k||M)$, there is a collision resistant $h$ for which this MAC is insecure. For instance the $H$ produced by Merkle-Demgard:
+
+Query $M$ and gets $t:=Sign_k(M)=H(k||M)=h_s(h_s(h_s(0||k)||M)||2n)$ then $Sign_k(M||2n)=h_s(t||(3n))$. 
+
+There are heuristics constructions of MACs from hash finctions. NMAC (nested MAC) for instance. Let $k=k1||k2$ and $Mac(k,M)=h_{k_2}(Merkle-Domegard(k_1,M))$. 
+
+In practice people use HMAC (standardized by NIST): $k_1=k\oplus ipad$, $k_2=k\oplus apad$ with $k$ uniform and $ipad$ and $apad$ standardized (fixed). 
 \end{document}
