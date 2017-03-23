@@ -14,6 +14,7 @@
 \newtheorem{claim}{Claim}
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
@@ -562,5 +563,126 @@ Big questions: \begin{itemize}
 \end{itemize}
 (coNL = \{A$|$there is a NDTM N in logspace, $x\in A \Leftrightarrow$ all path in N(x) accept\})\\
 
-\Thm{Immerman-Szelepcs\'enyi 87}{}{Nothing yet.}
+\Thm{}{}{NL = coNL}
+\Proof{Suffices to show $\overline{\text{PATH}}\in$NL.\\
+	
+$\overline{\text{PATH}}$: input G (directed graph), s,t\\
+Output: 1 if s and t are not connected, 0 otherwise.\\
+
+\Lem{}{}{There exists a non deterministic N in logarithmic space on input (G,s) s.t:\begin{itemize}
+		\item N(G,s) has at least one accepting path.
+		\item Number of vertices accessible from s is written on output tape for all accepting path.
+	\end{itemize}}
+Alg:\begin{itemize}
+	\item Apply lemma, let k = output tape
+	\item $b \leftarrow 0, c \leftarrow 0$ (counter)
+	\item For all vertice u\\
+	\indent Choose non deterministically a path from s of length $|V|$\\
+	\indent If reach u \{$c \leftarrow c+1,$ if u = t, $b \leftarrow 1$\}
+	\item If b = 0 \& c = k accept, otherwise reject.
+\end{itemize}
+
+Suppose (G,s,t) $\in \overline{\text{PATH}}$, then there exists an accepting path with c = k, and we never set b to 1 so we accept.
+
+Suppose (G,s,t)$\notin \overline{\text{PATH}}$, have to check that all path reject. If c < k, reject. If c = k, all vertices reachable from s are reached and so t is reached and b = 1. If both cases, reject.
+}
+\Proof{Proof sketch for Lemma\\
+	Let $S_i = \{v_i$ accesible from s in less than i steps$\}$, $S_0 = \{s\}$\\
+	Idea: Compute $|S_{i+1}| using |S_i|$ (trick is we don't need $S_i$ but only size)\\
+	
+	Step 1: Given $|S_i|$ and u, if u $\in S_i$, all accepting path write 1 on output tape, if not, all accepting path write 0 on output tape.
+	\newpage
+	Test(s,u,i,$|S_i|$)\\
+	\indent $c \leftarrow 0,b \leftarrow 0\\
+	\indent$ For all v\begin{itemize}
+		\item Apply PATH(G,s,$v_i$)
+		\item If accepts:\\
+		\indent $c \leftarrow c+1\\
+		\indent $if v = u, $b \leftarrow 1$
+	\end{itemize}
+	If c = $|S_i|$, accept and return b otherwise reject.\\
+	
+	Step 2: $|S_i| \rightarrow |S_{i+1}|$\\
+	$k \leftarrow 0$\\
+	For all u\\
+	\indent $b'\leftarrow0$\\
+	\indent For all v\\
+	\indent\indent b = Test(s,v,i,$|S_i|$)\\
+	\indent\indent If accept and b = 1 and u = v or v $\rightarrow$\\
+	\indent\indent\indent $b' \leftarrow 1$\\
+	\indent $k \leftarrow k + b'$\\
+	Return k
+	}
+
+\Thm{Immerman-Szelepcs\'enyi 87}{}{For any $S(n) \geq \log n$, and space constructible, coNSPACE(S(n)) = NSPACE(S(n))}
+\Proof{Use "padding". Let A $\in$ coNSPACE(S(n)) decided by N, $A' = \{(x,1^{2^{S(|x|)}}):x\in A\}$\\
+	$n = |x|\\
+	m = |(x,1^{2^{S(|x|)}}) = |x| + 2^{S(|x|)} \leq 2\cdot2^{S(|x|)}\\
+	\log m \leq S(n) + 1$\\
+	Also $\log m \geq S(|x|)$
+\begin{claim}
+	A' $\in$ coNL
+\end{claim}
+\Proof{Algo: \begin{itemize}
+		\item Check input has the form (x,$1^k)$
+		\item Check that k = $2^{S(|x|)}$
+		\item Run N on input x, uses space $S(|x|) = O(\log m)$
+	\end{itemize}
+	Use O(log m)\\
+	But coNL = NL. So $A' \in NL$. So there is a non det machine N' in space O(log m) for A'\\
+	
+	NDTM for A. Input x\\
+	Want to run N' on $(x,1^{2^{S(|x|)}})$ but cannot write that on a tape.\\
+	Solution: extra tape that holds the position p of the head on $(x,1^{2^{S(|x|)}})$\\
+	If $p \leq n$, read $x_p$, if $p > n$, read 1.
+	}
+}
+
+\section{Oracles and the polynomial time hierarchy}
+\Def{}{}{An Oracle Turing Machine is a TM with a special read/write tape and 3 special states: $q_{query},q_{yes},q_{no}$}
+
+For $O\subseteq \{0,1\}*$ a language called oracle, we define $M^O$ that works as follows for any x:\begin{itemize}
+	\item When $M^O$ enters state $q_{query}$ and $u \in \{0,1\}*$ is written on oracle tape, then next state is \begin{itemize}
+			\item $q_{yes}$ if $u \in O$
+			\item $q_{no}$ if $i \notin O$
+		\end{itemize}
+		and everything else is the same
+\end{itemize}
+
+\Rem{}{}{\begin{itemize}
+		\item It costs one step to determine $u \in O$, or $u \notin O$
+		\item x accepted if $M^O(x)$ arrives accepting state
+		\item x accepted if $N^O(x)$ has an accepting path
+	\end{itemize}}
+	
+\Def{}{}{$P^O$ is the set of languages that can be decided by a polytime deterministic machine with access to O\\
+	NP$^O$\indent"\indent"\indent NDTM\indent".}
+
+\Ex{}{}{if $O \in P$, $P^O = P$\\
+	$P^{\text{SAT}}$ contains NP but also $\overline{SAT}$ and hence coNP.
+}
+\Rem{}{}{Warning: notation misleading : not clear how to define $\mathcal{C}^O$ for any set of language $\mathcal{C}$}
+
+\Rem{}{}{For a fixed O, we have a universal Turing machine with oracle access to O that can simulate any machine with oracle O. This implies that we have a similar time hierarchy theorem}
+
+Structure of hierarchy theorem:\begin{itemize}
+	\item Effective representation of TMs
+	\item Ability to simulate with a small overhead.
+\end{itemize}
+Define $f(\alpha) \neq M_\alpha(\alpha)$ for all machine $\alpha$ that use ressource $\subseteq$.\\
+
+Time hierarchy theorem holds for all oracles O.\\
+$\rightarrow$ such a result is called "relativizing".
+
+Question: P vs NP relativize ?
+In other words, is the answer the same in all oracle worlds ?
+
+\Thm{}{}{There exists A,B, such that $P^A = NP^A$ and $P^B \neq NP^B$}
+
+\Rem{}{}{\begin{itemize}
+		\item Any proff that P = NP or P $\neq$ NP has to be sensitive to whether we have an oracle or not. Proof should not relativize.
+		\item P = NP $\implies P^O = NP^O$ is not clear. Could be that nondet doesn't help but if there is an oracle O, starts being helpful.
+		\item "There is an oracle B relative to which P $\neq$ NP"
+	\end{itemize}}
+
 \end{document}
