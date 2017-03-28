@@ -103,11 +103,11 @@ Cryptography is the science of information security, not just encryption. In a s
 
 The most classical form of encryption must satisfy:
 \begin{itemize}
-\item a talk to $B$ iver a public channel
-\item we don't eavesdropper C to understand the communication.
+\item A talks to $B$ over a public channel
+\item We don't want any eavesdropper (oreille indiscrète) C to understand the communication.
 \end{itemize}
 
-\Ex{}{}{Take a client and a server such that each of them have a Browser with 2 stages:
+\Ex{}{}{Take a client and a server such that each of them have a browser with 2 stages:
 \begin{itemize}
 \item 1: Handshake. They create a common session key, $K$
 \item 2: Using $K$, they can encrypt and decrypt the communication.
@@ -121,14 +121,14 @@ We have to deal with:
 \item Secret key cryptography: $A$ and $B$ use the same secret key $K$ to communicate
 \item Cryptography is not just an encryption:
 \begin{itemize}
-\item How $A$ can be sure je is really talking to $B$ (use of digital signatures)
+\item How $A$ can be sure he is really talking to $B$ (use of digital signatures)
 \item How can they know the that the communication has not been modified ? (Question of integrity)
 \item What if I don't want to reveal my identity ? (Anonymous communication)
 \end{itemize} 
 \item More complex primitives and properties:
 \begin{itemize}
 \item Digital cash: should be anonymous, infeasible to fake or duplicate
-\item E-voting: $n$ voter choose candidates, majority wins but votes should be anonymous, it must impossible to vote twice, votes must be verified.
+\item E-voting: $n$ voter choose candidates, majority wins but votes should be anonymous, it must impossible to vote twice, votes must not be verified.
 \end{itemize}
 \end{itemize}
 
@@ -158,27 +158,27 @@ However cryptography has its limitations:
 \item $Enc : K\times P \rightarrow C$
 \item $Dec : K\times C \rightarrow P$
 \end{itemize}
-such that $\forall m\in P, k\in K, Dec(k,Enc(k,m))=m$ and such there are PPT algorithms that compute each of those previous functions.
+such that $\forall m\in P, k\in K, Dec(k,Enc(k,m))=m$ and such there are PPT (probabilistic polynomial time) algorithms that compute each of those previous functions.
 \begin{itemize}
 \item $m$ and $k$ are independent random variables
 \item $Enc$ may be probabilistic but $Dec$ is usually deterministic
 \item We assume (in the following) that elements of $K,P,C$ have non-zero probabilities.
 \end{itemize}}
 
-\Def{Perfect security (Shannon, 1949)}{def:perfSec}{For any message distribution $\mathcal{M}$ over $P$, \[\forall \bar{m}\in P, \Pr_{m\hookrightarrow\mathcal{M}, k\hookrightarrow U(K)}(m=\bar{m}|Enc(k,m))\]}
+\Def{Perfect security (Shannon, 1949)}{def:perfSec}{For any message distribution $\mathcal{M}$ over $P$, \[\forall \overline{m}\in P, \Pr_{m\hookrightarrow\mathcal{M}, k\hookrightarrow U(K)}(m=\overline{m}|Enc(k,m))=\Pr(m=\overline{m})\]}
 
 \underline{Remark:} The intuition is that giving $E(k,m)$ does not leaks any information about $m$. Formally, $m$ and $Enc(k,m)$ are independent.
 
 \Lem{Shannon}{}{Perfect security implies that $|K|\geq|P|$}
 \begin{proof}
-By contradiction assume $|K|<|P|$. Then define $P(\bar{c})=\{m\in P|\exists k\in K, m=Dec(k,\bar{c})\}$. Then $|P(\bar{c})\leq|K|$ since $\forall m\in P(\bar{c}),\exists k\in K, m=Dec(k,\bar{c})$.
+By contradiction assume $|K|<|P|$. Then define $P(\bar{c})=\{m\in P|\exists k\in K, m=Dec(k,\bar{c})\}$. Then $|P(\bar{c})|\leq|K|$ since $\forall m\in P(\bar{c}),\exists k\in K, m=Dec(k,\bar{c})$.
 
 Then by our assumption $P-P(\bar{c})\neq\emptyset$. Let $\bar{m}$ be in this set. Then $\Pr(m=\bar{m}|\bar{c}=Enc(k,m))=0\neq\Pr(m=\bar{m})$. That is a contradiction with perfect security (ck previous remark).
 \end{proof}
 
-\Def{One-time Pad (OPT), Vernam's cipher (patented in 1917)}{def:OTP}{We take $K=\{0,1\}^l=P=C$. $Enc(k,m) = m\oplus k$ and $Dec(k,c)=c\oplus k$}
+\Def{One-time Pad (OTP), Vernam's cipher (patented in 1917)}{def:OTP}{We take $K=\{0,1\}^l=P=C$. $Enc(k,m) = m\oplus k$ and $Dec(k,c)=c\oplus k$}
 
-\Thm{}{thm:OPTPerfect}{Vernam's cipher is perfectly secret}
+\Thm{}{thm:OTPPerfect}{Vernam's cipher is perfectly secret}
 \begin{proof}
 Let $\bar{m}\in P, \bar{c}\in C$ arbitrary. If we have $\Pr(c=\bar{c}|m=\bar{m})=\Pr(c=\bar{c}))=\Pr(c=\bar{c})$ then by multiplying by $\frac{\Pr(m=\bar{m})}{\Pr(c=\bar{c})}$ we get the result. Then let's compute it:
 \[\begin{array}{r c l}
@@ -202,7 +202,7 @@ The major problems with that are:
 
 \section{Pseudo-random generators (PRG) and stream ciphers}
 \subsection{One-time pad and pseudo-randomness}
-\underline{Idea:} use the OPT with pseudo-random bits rather than truly random ones.
+\underline{Idea:} use the OTP with pseudo-random bits rather than truly random ones.
 
 \begin{itemize}
 \item We want to use a PRG $G:\{0,1\}^s\rightarrow\{0,1\}^n$ with $n\gg s$
@@ -220,19 +220,19 @@ The major problems with that are:
 
 \Def{Predictable PRG}{def:predPRG}{
 A PRG is \underline{predictable} if there exists a PPT (Probabilistic Polynomial Time) algorithm $A$ and an index $i\in\llbracket1,m\rrbracket$ such that:
-\[\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])>\frac{1}{2}+\epsilon(s)\]
+\[\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k)[1...i])=G(k)[i+1])>\frac{1}{2}+\epsilon(s)\]
 for some non-negligible function of $s$, $\epsilon>0$.}
 \underline{Remark:} It restricts the adversary's power (otherwise $A$ could use all possible $k$) and the probability is taken over the uniform choice of $k$ and the internal randomness of $A$.
 
 \underline{Remark: } A PRG is unpredictable if for all PPT algorithm and index, $\epsilon$ is negligible.
 
-\underline{Question: } How to compute $p:=\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k|[1...i])=G(k)[i+1])$ ? One way to do so is to proceed as the following algorithm:\\
+\underline{Question: } How to compute $p:=\Pr_{k\hookrightarrow U(\{0,1\}^s), \text{$A$'s internal randomness}}(A(G(k)[1...i])=G(k)[i+1])$ ? One way to do so is to proceed as the following algorithm:\\
 
 
 \begin{algorithme}
 $x::=0$\\
 \ForFromTo{i}{1}{N}{choose $k$ uniformly at random\\
-If $A(G(k|[1...i])=G(k)[i+1]$ increment $x$}
+If $A(G(k)[1...i])=G(k)[i+1]$ increment $x$}
 \Return{$x/N\approx p$}
 \end{algorithme}
 
@@ -247,7 +247,7 @@ $G(\{0,1\}^s)$ is a tiny subset of $\{0,1\}^n$ but we want it to looks uniform. 
 
 \Def{Indistinguishability from uniform}{def:unifPRG}{A PRG $G$ is indistinguishable from uniform if $D_1:=\{G(k)|k\hookrightarrow U(\{0,1\}^s)\}$ and $D_2:=\{x|x\hookrightarrow U(\{0,1\}^n)\}$ are indistinguishable} 
 
-\Def{unpredicatable PRG}{def:unpredPRG}{A PRG $G$ is unpredictable if dor evry PPT algorithm $\A$ and every $i\in\{1,...,n\}$,
+\Def{unpredicatable PRG}{def:unpredPRG}{A PRG $G$ is unpredictable if for every PPT algorithm $\A$ and every $i\in\{1,...,n\}$,
 \[|\Pr_{k\hookrightarrow U(\{0,1\}^s)}(\A(G(k)[1...i])=G(k)[i+1])-\frac{1}{2}|\leq negl(s)\]
 for some $negl:\N\rightarrow\N$.
 }
@@ -272,7 +272,7 @@ Adv_{\A'} &=& |\Pr_{k\hookrightarrow U(\{0,1\}^s)}(\A'(G(k))=1)-\Pr_{x\hookright
 &=& |(\frac{1}{2}+\epsilon)-\frac{1}{2}|\\
 &=& \epsilon
 \end{array}\]
-\item Here the harder part. We use an hybrid argument. Let $D_n=G(U(\{0,1\}^s))$ and $D_0=U(\{0,1\}^n)$. Let $\A$ be a PPT distinguisher such that $Adv_\A(D_n,D_0)\geq\epsilon$ for some non-negligible $\epsilon$. Let $D_i$ an hybrid distribution over $\{0,1\}^n$ where the first $i$ bits are those of $G(k)$ and that last $n-i$ bit are uniform, \[D_i=\{G(k)[1...i]||Y(\{0,1\}^{n-i})|k\hookrightarrow U(\{0,1\}^s)\}\]
+\item Here the harder part. We use an hybrid argument. Let $D_n=G(U(\{0,1\}^s))$ and $D_0=U(\{0,1\}^n)$. Let $\A$ be a PPT distinguisher such that $Adv_\A(D_n,D_0)\geq\epsilon$ for some non-negligible $\epsilon$. Let $D_i$ an hybrid distribution over $\{0,1\}^n$ where the first $i$ bits are those of $G(k)$ and that last $n-i$ bit are uniform, \[D_i=\{G(k)[1...i]||U(\{0,1\}^{n-i})|k\hookrightarrow U(\{0,1\}^s)\}\]
 
 By the triangle equality, there exists $i\in\{1...n\}$ such that $Adv_\A(D_i,D_{i+1})\geq\frac{\epsilon}{n}$. We build a predictor by choosing $i\hookrightarrow U(\{1...n\})$. $\A'$ takes input $(x_1...x_i)\in G(k)[1...i]\subseteq\{0,1\}^i$ and should find $G(k)[i+1]$ using $\A$.
 $\A'$ chooses $x_{i+1}...x_n\hookrightarrow U(\{0,1\})$ and feed $\A$ with $x_1...x_n$.
@@ -319,17 +319,17 @@ Adv_{\A'} &=& |p-\frac{1}{2}|\\
 \item eastream $\{0,1\}^s\times\{0,1\}^n\rightarrow\{0,1\}^n$ where second argument is a nonce used to randomize seed.
 \end{itemize}
 \paragraph{Using PRG encrypt is non-trivial} Double encryption is non secure. Let $c_1=Enc(k,m_1)=m_1\oplus G(k)$ and $c_2=Enc(k,m_2)=m_2\oplus G(k)$ then $c_1\oplus c_2 = m_1\oplus m_2$.
-\underline{Other attempt:} WEP (Wired Equivalent Privacy) (used in IEEE 80211 norm to secure wifi networks replaced by WPA in 2003). $Enc(k,m)$ take short IV and compute $c=m\oplus PRG(IV||k)$. WEP128 takes 24 bits for IV and 104 for $k$ (the PRG has 128 bits seeds). Wery quickly all IVS have been used and the same ssed is used twice. Then successive IVs make seeds highly correlated.
+\underline{Other attempt:} WEP (Wired Equivalent Privacy) (used in IEEE 80211 norm to secure wifi networks replaced by WPA in 2003). $Enc(k,m)$ take short IV and compute $c=m\oplus PRG(IV||k)$. WEP128 takes 24 bits for IV and 104 for $k$ (the PRG has 128 bits seeds). Very quickly all IVS have been used and the same seed is used twice. Then successive IVs make seeds highly correlated.
 \subsection{Encryption with semantic security}
 
-\underline{Shanon (perfect security):} the distribution $Enc(k,m_0)$ and $Enc(k,m_1)$ shuold be identical for any $m_0,m_1$. Then $|k|=|m|$ ($|K|=|P|$), what is a too strong property.\\
+\underline{Shannon (perfect security):} the distribution $Enc(k,m_0)$ and $Enc(k,m_1)$ should be identical for any $m_0,m_1$. Then $|k|=|m|$ ($|K|=|P|$), what is a too strong property.\\
 \underline{Semantic security :} for one-time keys and chosen plain-text attacks. From a random $k\hookrightarrow U(K)$, $Enc(k,m_0)$ should be computationally indistinguishable from $Enc(k,m_1)$.
 
 \Def{Semantically secureness}{def:semSecure}{An ecryption scheme $(Keygen,Enc,Dec)$ over $(K,l,C)$ is semantically secure if, for any PPT adversary $\A$, there exists a negligible function $negl:\N\rightarrow\N$ such that $Adv_\A(\lambda)\leq negl(\lambda)$.}
 
 Consider the experiment $Exp_b$ where $b\in\{0,1\}$.
 \begin{itemize}
-\item $\A$ is given $A^\lambda$ and chooses messages $M_0,M_1$ of the same length
+\item $\A$ is given $1^\lambda$ and chooses messages $M_0,M_1$ of the same length
 \item Challenger chooses a key $k\hookrightarrow Keygen(1^\lambda)$ and computes $c=Enc(k,M_b)$ which is given to $\A$.
 \item $\A$ outputs $b'\in\{0,1\}$ and wins if $b=b'$. 
 \end{itemize}
@@ -526,7 +526,7 @@ We consider the two experiments $Exp_{Unif}$ and $Exp_F$ that are the equivalent
 
 \Def{Security of a PRF}{def securePRF}{The PRF $F$ is said secure if for all PPT adversary $\A$ we have $Adv_\A(F)$ negligible.} 
 
-It seems much stronger than a PRG, whixh only do one query on a uniformly chosen input where as many queries on adaptively chosen inputs.
+It seems much stronger than a PRG, which only does one query on a uniformly chosen input where PRF can make as many queries on adaptively chosen inputs as necessary.
 
 \subsubsection{Equivalence between PRF and PRG.}
 \Thm{Equivalence}{thm:equivPRGPRF}{There exists a secure PRG if and only if there exists a secure PRF.}
@@ -549,10 +549,10 @@ Idem between $Exp_{Unif}$ and the second hybrid.
 $F_l:\bit^n\times\bit^l\rightarrow\bit^n$ described by the following algorithm\\
 \begin{algorithme}
 \underline{Inputs:} key $k$, $x$.\\
-\ForFromTo{i}{0}{l}{$k_i::=\begin{array}{r l}
+\ForFromTo{i}{0}{l}{$k_i::=\left\{\begin{array}{r l}
 G(k_{i-1})_{|L} & \text{if $x_i=0$}\\
 G(k_{i-1})_{|R} & \text{if $x_i=1$}\\
-\end{array}$}
+\end{array}\right.$}
 \Return $k_l$
 \end{algorithme}
 \end{itemize}
@@ -589,7 +589,7 @@ The scheme is CPA secure if this advantage is a negligible function of $\lambda$
 
 \paragraph{CPA security encryption from PRFs} Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF. We encrypt $m$ as $E(k,m)=(r,m\oplus F(k,r))$ with $r\hookrightarrow U(\bit^n)$.
 
-\Thm{}{thm:CPAsecurePRF}{The previous scheme is CPA-secure if $F$ is a PRF. Anty CPA attacker $\A$ implies a PRF distinguisher $\B$ such that $Adv_\A^{CPA}(\lambda)\leq 2(Adv_\B^{PRF}(\lambda)+\frac{q^2}{2^n})$, where $q$ ois the number of encryption queries made by $\A$.}
+\Thm{}{thm:CPAsecurePRF}{The previous scheme is CPA-secure if $F$ is a PRF. Any CPA attacker $\A$ implies a PRF distinguisher $\B$ such that $Adv_\A^{CPA}(\lambda)\leq 2(Adv_\B^{PRF}(\lambda)+\frac{q^2}{2^n})$, where $q$ is the number of encryption queries made by $\A$.}
 
 \begin{proof}
 Consider an ideal scheme where $F(k,\cdot)$ is replaced by $R(\cdot)$ which is truly random. Let $Rand_b$ which is the CPA experiment $Exp_b$ where $F(k,\cdot)$ is replaced by $R(\cdot)$ at each query $(m_{i,0},m_{i,1})$. Then $\A$ sees $(r_i,m_{i,b}\oplus R(r_i))$.
@@ -676,7 +676,7 @@ Fresh IV is sued every time to encrypt $(m_0,...,m_{l-1})$ and $c_i=m_i\oplus F(
 \subsection{Message authentication code (MAC)}
 The goal is to ensure data authentication and integrity (no manipulation, insertion, deletion,...). It can be useful without confidentiality.
 
-\Def{MAC}{def:MAC}{A Message authentication code is a tuple of PPT algorithms $(Gen,MAC,Verif)$ such that:\begin{itemize}
+\Def{MAC}{def:MAC}{A Message authentication code is a tuple of PPT algorithms $(Gen,Mac,Verif)$ such that:\begin{itemize}
 \item $Gen$ is a key generator algorithm taking as input a security parameter $1^\lambda$ and outputs a key $k$ such that $|k|\geq\lambda$.
 \item $Mac$ takes as input $k$ and a message $m$ and outputs a tag $t=Mac_k(m)$.
 \item $Verif$ take as input $k$ a candidate $(m,t)$ and outputs $0$ or $1$ deterministicaly.
@@ -684,15 +684,17 @@ The goal is to ensure data authentication and integrity (no manipulation, insert
 
 \Def{}{def:unforgeadapt}{A MAC is unforgeable under adaptive chosen-message attacks if no PPT adversary $\A$ has noticeable advantage in the following game:\begin{itemize}
 \item Challenger generates $k=Gen(1^\lambda)$ and initializes $Q=\emptyset$. Adversary is given $1^\lambda$.
-\item $\A$ has oracle acess to $MAC_k(\cdot)$, $\A$ chooses $m$, challenger return $t=MAC_k(m)$ and updates $Q\leftarrow Q\cup\{m\}$
-\item $\A$ outputs $(m^*,t^*)$ and wins if $Verif_k(m*,t*)=1$ and that $m^*\notin Q$.
+\item $\A$ has oracle acess to $Mac_k(\cdot)$, $\A$ chooses $m$, challenger return $t=Mac_k(m)$ and updates $Q\leftarrow Q\cup\{m\}$
+\item $\A$ outputs $(m^*,t^*)$ and wins if $Verif_k(m^*,t^*)=1$ and that $m^*\notin Q$.
 \end{itemize}}
 
 It means that given examples $\A$ can extrapolate and compute a tag by itself on a new message $m^*$.
 
 Here we define the advantage as follows: $Adv_\A^{MAC}=\Pr(\A\text{ wins})$.
 
-\Rem It is strongly unforgeable if the adversary wins if it outputs $(m^*),t)$ such that $(m^*),t)\notin\{(m_1,t_1),...,(m_q,t_q)\}$ where $m^*=m_i$ for some î: it outputs a new $t^*$ for a previously authencidated $m^*=m_i$ for some $i$.
+\Rem It is strongly unforgeable if the adversary wins if it outputs $(m^*,t^*)$ such that $(m^*,t^*)\notin\{(m_1,t_1),...,(m_q,t_q)\}$ where $m^*=m_i$ for some i: it outputs a new $t^*$ for a previously authencidated $m^*=m_i$ for some $i$.
+
+\Def{Forgery}{def:forgery}{We define a forgery as a correct couple $(m^*,t^*)$ that is accepted by the challenger ($\A$ wins).}
 
 \subsection{Constructing MACs}
 \paragraph{Fixed-lenght MAC} We take a PRF and get a MAC. Let $F:\bit^\lambda\times\bit^n\rightarrow\bit^m$ be a PRF.\begin{itemize}
@@ -701,7 +703,7 @@ Here we define the advantage as follows: $Adv_\A^{MAC}=\Pr(\A\text{ wins})$.
 \item $Verif$: given $k$ and $(m,t)$ it returns $1$ iif $t=F(k,m)$.
 \end{itemize}
 
-\Thm{}{thm:cstrongunforgeMacbyPRF}{If $F$ is a PRF, the associated MAC is a strongly unforgeable one under chosen message attack; if there is a PPT attacjer $\A$ against the MAC, there is a PRF distinguisher $\B$ such that $Adv_\B^{Prf}(\lambda)\geq Adv_\A^{Mac}(\lambda)-\frac{1}{2^m}$}
+\Thm{}{thm:cstrongunforgeMacbyPRF}{If $F$ is a PRF, the associated MAC is a strongly unforgeable one under chosen message attack; if there is a PPT attacker $\A$ against the MAC, there is a PRF distinguisher $\B$ such that $Adv_\B^{Prf}(\lambda)\geq Adv_\A^{Mac}(\lambda)-\frac{1}{2^m}$}
 
 \begin{proof}
 We build a distinguisher $\B$ that has access to an oracle $O:\bit^n\rightarrow\bit^m$ where the oracle is such that $O(x)=\left\{\begin{array}{r l}
@@ -714,7 +716,7 @@ $\B(1^\lambda)$:\begin{itemize}
 \item At each query $m$ made by $\A$, $\B$ queries $O(m)$ to its PRF challenger and returns $t=O(m)$ to $\A$
 \item When $\A$ outputs $(m^*,t^*)$ then $\B$ queries $O(m^*)$ to its challenger and test if $t^*=O(m^*)$ and returns $1$ in case of equality.
 
-In $PRF-Exp_0$ $O(m)=R(m)$ for each $m$ Then $\Pr(\B(1^\lambda=1|O=R)=\frac{1}{2^m})$ and in $PRF-Exp_1$ $O=F(k,\cdot)$ then $\Pr(B(1^\lambda)=1|O=F(k,\vdots) = Adv_\A^{MAC}(\lambda)$. Then $Adv_\B(\lambda)\geq Adv_\A^{MAC}(\lambda) - \frac{1}{2^m}$.
+In $PRF-Exp_0$, $O(m)=R(m)$ for each $m$ Then $\Pr(\B(1^\lambda)=1|O=R)=\frac{1}{2^m}$ and in $PRF-Exp_1$, $O=F(k,\cdot)$ then $\Pr(B(1^\lambda)=1|O=F(k,\cdot)) = Adv_\A^{MAC}(\lambda)$. Then $Adv_\B(\lambda)\geq Adv_\A^{MAC}(\lambda) - \frac{1}{2^m}$.
 \end{itemize}
 \end{proof}
 \paragraph{Larger length MACs} We talk about CBC (cipher block chaining) MACs. We get long but fixed length messages: $m\in(\bit^n)^l$ with $l$ polynomial in $\lambda$ is fixed in advance.
@@ -752,7 +754,7 @@ In pratice ECBC-MAC based on AES is the default option.\\
 MACS are crucial for CCA-secure encryption: CPA-secure encryption scheme and a MAC can ensure CCA security.
 
 \subsection{Chosen Cipher Attack security}
-\Def{CCA security}{def:CCAsecure}{A symmetric encryption scheme $(Keygen,Enc,Dec)$ is CCA secure if no PPT algorithm $\A$ adversary can win the following gamie more than negligible advantage:
+\Def{CCA security}{def:CCAsecure}{A symmetric encryption scheme $(Keygen,Enc,Dec)$ is CCA secure if no PPT algorithm $\A$ adversary can win the following game more than negligible advantage:
 
 \begin{center}
 \begin{tikzpicture}[>=latex]
@@ -769,8 +771,12 @@ MACS are crucial for CCA-secure encryption: CPA-secure encryption scheme and a M
 \node	[]	at (6,2) {Repeat $q$ times};
 \draw [-] (5,1.8) -- (5,0.3);
 
-\draw	[->]	(4.5,1.5)	--node[above]	{$c_i$}		(1.5,1.5);
-\draw	[->]	(1.5,0.5)	--node[above]	{$Dec(k,c_i)$}	(4.5,0.5);
+\draw	[->]	(4.5,1.5)	--node[above]	{$c_i$ or $m_i$}		(1.5,1.5);
+
+\node at (7,1.5) {$c_i$ for decrypt queries};
+\node at (7,1) {or $m_i$ for encrypt queries};
+
+\draw	[->]	(1.5,0.5)	--node[above]	{$Dec(k,c_i)$ or $Enc(k,m_i)$}	(4.5,0.5);
 
 \node [] at (0,0.5) {if $c_i=c^*$ then abort};
 
@@ -792,6 +798,8 @@ This is all for symetric cryptography for this course. We have seen :
 \node at (4.5,3) {$\Leftrightarrow$};
 \node at (6,3) {PRPermuations};
 
+\node at (1.5,3.5) {Thm \ref{thm:equivPRGPRF}};
+
 \node at (0,1.5) {stream ciphers};
 \node at (2.25,1.75) {block};
 \node at (2.25,1.25) {ciphers};
@@ -807,7 +815,7 @@ This is all for symetric cryptography for this course. We have seen :
 
 We can show that all of that is equivalent to one-way functions. Proving that all of that implies one way function is easier, but the proof that one way functions implies PRG is trickier and uses locally decodable codes.
 
-\Def{}{def:oneway}{A one way function $f$ is a poly-time computable function such that for $a$ uniformly chosen in $Im\ f$, it is hard to compute $x$ such that $f(x)=a$: i.e for all PPR $\A$, $\Pr_y(A(y)\text{ returns $x$ such that } f(x)=y)$ is negligible.}
+\Def{}{def:oneway}{A one way function $f$ is a poly-time computable function such that for $a$ uniformly chosen in $Im\ f$, it is hard to compute $x$ such that $f(x)=a$: i.e for all PPT $\A$, $\Pr_y(A(y)\text{ returns $x$ such that } f(x)=y)$ is negligible.}
 
 \section{Cryptographic hash functions}
 Hash functions was a very hot topic until 2012 and aims to give control in cryptographic constructions. In the old days, there used to be two main hash functions, MD5 and SHA1. In in 2004-2005, Xiaoyum Wang broke MD5, SHA1 and lots of variants. Then NIST opened a competition. Keccack was selected as the standard and is now called SHA3.
@@ -853,11 +861,11 @@ Define the event $NoColl_i$ the event $y_1,...,y_i$ are distinct.
 \end{proof}
 
 \subsection{Building hash functions}
-Merkle-Domgard from fixed length to variable length. Wlog one can assume that one have $h:\bit^{2n}\rightarrow\bit^n$. For input $x\in\bit^*$ we proceed as the following:\begin{itemize}
-\item if nedded, pas $x$ with $0$'s so that $|x|$ is a multiple of $n$.
+Merkle-Damg\aa rd from fixed length to variable length. Wlog one can assume that one have $h_s:\bit^{2n}\rightarrow\bit^n$. For input $x\in\bit^*$ we proceed as the following:\begin{itemize}
+\item if nedded, pad $x$ with $0$'s so that $|x|$ is a multiple of $n$.
 \item write $x=x_1||...||x_B$ with $x_i\in\bit^n$ for all $i$.
 \item define $x_{B+1}=|x|$ the bitlength of $x$. ($\log|x|\leq n$ then one can complete it such with useless $0$'s and get a word of length $n$.)
-\item set $z_0=0$ and $z_i=h_s(z_{i-1}||x_i)$
+\item set $z_0=IV$ and $z_i=h_s(z_{i-1}||x_i)$
 \item outputs $H_s(x)=z_{B+1}\in\bit^n$.
 \end{itemize}
 
@@ -879,11 +887,11 @@ Davies-Meyer: $h(m_0||m_1)=Enc_{m_0}(m_1)\oplus m_1$\\
 Miyaguchi-Breneel : $h(m_0||m_1)=Enc_{m_0}(m_1)\oplus m_1\oplus m_0$
 
 \subsection{MACs based on hash functions.}
-Bad idea: $Sign_k(M)=h(k||M)$, there is a collision resistant $h$ for which this MAC is insecure. For instance the $H$ produced by Merkle-Demgard:
+Bad idea: $Sign_k(M)=h(k||M)$, there is a collision resistant $h$ for which this MAC is insecure. For instance the $H$ produced by Merkle-Damg\aa rd:
 
 Query $M$ and gets $t:=Sign_k(M)=H(k||M)=h_s(h_s(h_s(0||k)||M)||2n)$ then $Sign_k(M||2n)=h_s(t||(3n))$. 
 
-There are heuristics constructions of MACs from hash finctions. NMAC (nested MAC) for instance. Let $k=k1||k2$ and $Mac(k,M)=h_{k_2}(Merkle-Domegard(k_1,M))$. 
+There are heuristics constructions of MACs from hash finctions. NMAC (nested MAC) for instance. Let $k=k1||k2$ and $Mac(k,M)=h_{k_2}(MerkleDamgard(k_1,M))$. 
 
 In practice people use HMAC (standardized by NIST): $k_1=k\oplus ipad$, $k_2=k\oplus apad$ with $k$ uniform and $ipad$ and $apad$ standardized (fixed). 
 \end{document}

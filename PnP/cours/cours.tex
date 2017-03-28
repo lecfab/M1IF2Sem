@@ -247,7 +247,7 @@ Avec le dernier exemple, on peut voire que l'on a besoin de $\betaar\subseteq\be
 
 \Def{Terme fortement normalisant}{}{$e\in\Lambda$ est fortement normalisant s'il n'existe pas de $\beta$-réduction infinie sur $e$.}
 
-Soit $\mathcal{N}$ l'ensemble des termes fortement normalisant. Soit alors $\mathcal{N}_0=\{x\ u_1\ ...\ u_n\}\subseteq\mathcal{N}$.\\
+Soit $\mathcal{N}$ l'ensemble des termes fortement normalisant. Soit alors $\mathcal{N}_0=\{x\ u_1\ ...\ u_n|x\ u_1\ ...\ u_n \in\mathcal{N}\}\subseteq\mathcal{N}$.\\
 Soit $Succ(e)=\{e'\in\Lambda|e\beta_0 e'\}$ l'ensemble des successeurs de $e$ pour $\beta_0$. Pour tout $e\in\Lambda$, c'est un ensemble fini.
 \Lem{Koening}{lem:Koening}{Si un arbre est infini et cet arbre est a branchement fini alors il existe un chemin infini}
 
@@ -265,12 +265,28 @@ Si $e\in\mathcal{N}$ on notera $l(e)$ la somme des longueurs de toutes les rédu
 \item si $e\in\mathcal{N}$ alors $\lambda x.e\in\mathcal{N}$.
 \item si $e\in\mathcal{N}$ et $e\beta e'$ alors $e'\in\mathcal{N}$.
 \item si $e\in\Lambda$ et $Succ(e)\subseteq\mathcal{N}$ alors $e$ est fortement normalisant.
+\item si $e\in\Lambda$ et $x\in\X$ on a $e\ x\in\mathcal{N}\Rightarrow e\in\mathcal{N}$
 \end{itemize}}
 
 \Ex{}{ex:normalisation}{\begin{itemize}
 \item $\lambda x.x$ est une forme normale respectivement à $\beta_0$.
 \item $\beta_0$ n'est pas normalisante. Par exemple $\Omega\equiv (\lambda x.x\ x)\ (\lambda x.x\ x)$ se réduit vers lui même.
 \end{itemize}}
+
+\Lem{}{}{Si $b\in\mathcal{N}$ et si $a\brakets{b/x} \overline{u} \in\mathcal{N}$ alors $(\lambda x.a)\ b \overline{u}\in\mathcal{N}$}
+
+\underline{Remarque : } L'hypothèse $b\in\mathcal{N}$ est inutile. $(\lambda x.\lambda y.t)\ \Omega\notin\mathcal{N}$ alors que $\lambda y.y\in\mathcal{N}$.
+
+\begin{proof}
+Le raisonnement procède par récurrence sur la parie $(l(b),l(a\brakets{b/x}\ \overline{u})$.
+
+On regarde les successeurs $e'\in Succ(e)$ $e\ \beta_0\ e' $ si l'un des cas suivant est satisfait.\begin{itemize}
+\item $(\lambda x.a)\ b\ \overline{u}\ \beta_0\ a\brakets{b/x}\ \overline{u}$
+\item $(\lambda x.a)\ b\ \overline{u}\ \beta_0\ (\lambda x.a)\ b\ \overline{u'}$ tel que $u_i\ \beta_0\ u'_i$. Dans ce cas $a\brakets{b/x}\ \overline{u}\ \beta_0\ a\brakets{b/x}\ \overline{u'}$. De plus $l(a\brakets{b/x}\ \overline{u})>l(a\brakets{b/x}\ \overline{u'})$ donc par hypothèse on en deduit que $(\lambda x.a)\ b \overline{u'}\in\mathcal{N}$
+\item $(\lambda x.a) b \overline{u}\ \beta_0\ (\lambda x.a) b' \overline{u}$ via $b\ \beta_0\ b'$
+\item $(\lambda x.a) b \overline{u}\ \beta_0\ (\lambda x.a') b \overline{u}$ via $a\ \beta_0\ a'$
+\end{itemize}
+\end{proof} 
 
 \Def{Confluence}{def:confluence}{Soit $\mathcal{R}$ une relation binaire sur $\Lambda$ si pour tous $a,b,c$ tels que $a\ \mathcal{R}^*\ b$ et $a\ \mathcal{R}^*\ c$ alors il existe $d\in\Lambda$ tel que $b\ \mathcal{R}^*\ d$ et $c\ \mathcal{R}^*\ d$.}
 \begin{center}
@@ -565,4 +581,119 @@ On aimerait donc comme précédemment que $\vdash \lambda x.x\ x: (\forall X,X\r
 \end{itemize}
 \subsubsection{A la Curry}
 Ici rien à signaler de très précis puisque les termes ne sont pas changés.
+
+\subsection{Propriétés méta du système $F$}
+\begin{itemize}
+\item expressivité
+\item CR (Church-Rosser), SN (strong normalization), SR (subject reduction)
+\item Propriété de décidabilité. 
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}
+\node at (0,6) {Propriété};
+\node at (0,5.5) {CR};
+\node at (0,5) {SR};
+\node at (0,4.5) {SN};
+
+\node at (5,6) {$F$ pour Church};
+\node at (5,5.5) {x};
+\node at (5,5) {Facile};
+\node at (5,4.5) {cf TD};
+
+\node at (10,6) {$F$ pour Curry};
+\node at (10,5.5) {déjà fait};
+\node at (10,5) {plus dur};
+\node at (10,4.5) {cf TD, àpartir de $\lambda_\rightarrow$};
+\draw [->] (9,5.5) -- (6,5.5);
+\end{tikzpicture}
+\end{center} 
+Dans les deux systèmes $F$ on a les lemmes suivant : 
+
+\Lem{}{lem:restrictFV}{Si $\Delta\vdash t:T$ et $\Delta'$ contexte de typage tel que $\Delta_{|FV(t)}=\Delta'_{|FV(t)}$ alors $\Delta'\vdash t:T$.}
+\Lem{}{lem:remplVarType}{Si $\Delta\vdash t:T$ alors pour tout $S$ et toute variable de type $X$, $\Delta\brakets{S/X}\vdash t\brakets{S/X}:T\brakets{S/X}$.}
+\Lem{}{lem:particularisation}{Si $\Delta,x:S\vdash t:T$ et $\Delta\vdash s:S$ alors $\Delta\vdash t\brakets{s/x}:T$}
+
+\subsubsection{Propriétés de $F$-Church}
+\Prop{SR}{prop:ChurchSR}{Si $\Delta\vdash_{Church} t:T$ et $t\rightarrow t'$ alors $\Delta\vdash_{Church} t':T$}
+\begin{proof}
+En exercice
+\end{proof}
+
+Pour rappel, la relation $\rightarrow$ est l'analogue de $\beta_0$.
+
+\Thm{SN}{thm:ChurchSN}{Si $\Delta\vdash_{Church}t:T$ alors $t$ est fortement normalisant.}
+
+\begin{proof}
+CF fiche d'exercice de la semaine 7. Elle basée sur le résultat pour $\lambda_\rightarrow$
+\end{proof}
+
+\Prop{Confluence faible}{}{Si $\Delta\vdash_{Church}t:T$ et si $t\rightarrow t_1$ et $t\rightarrow t_2$ alors il existe $t_3$ tel que $t_i\rightarrow^*t_3$ pour $i=1,2$}
+
+\Cor{Confluence}{cor:Church:Confl}{La relation $\rightarrow$ est confluante sur les termes bien typés.}
+
+\begin{proof}
+On s’appuie sur le résultat SN et la confluence faible.
+\end{proof}
+
+\subsubsection{Propriétés de $F$-Curry}
+On peut établir le résultat suivant.
+
+\Thm{SR}{prop:CurrySR}{Si $\Delta\vdash_{Curry} t:T$ et $t\ \beta_0\ t'$ alors $\Delta\vdash_{Curry} t':T$}
+
+Ce dernier résultat est vrai mais sa preuve nécessite quelques détours.
+
+\paragraph{Système alternatif}
+On introduit la notion de \underline{séquence} de type $\Delta\vdash T_0,...,T_n$ séquence avec les règles suivantes :
+\[\rRule{Ax}{}{\Delta\vdash_0 T\text{ seq}}\]
+\[\rRule{Gen}{\Delta\vdash_n T_0,...,T_n\text{ seq}\ \ X\notin FT(\Delta)}{\Delta\vdash_{n+1}T_0,...,T_n,\forall X.T_n \text{ seq}}\]
+\[\rRule{Inst}{\Delta\vdash_n T_0,...,T_n\text{ seq}\ \ T_n\equiv\forall X.T}{\Delta\vdash_{n+1}T_0,...,T_n,T\brakets{S/X} \text{ seq}}\]
+\[\rRule{Hyp}{x:T\in\Delta}{\Delta\vdash_0 x:T}\]
+\[\rRule{\rightarrow_I}{\Delta,x:S\vdash_n t:T}{\Delta\vdash_0\lambda x.t:S\rightarrow T}\]
+\[\rRule{\rightarrow_E}{\Delta\vdash_p e:S\rightarrow T\ \ \Delta\vdash_q s:S}{\Delta\vdash_0 e\ s:T}\]
+\[\rRule{Sub}{\Delta\vdash_0 t:T\ \ \Delta\vdash_nT_0,...,T_n\text{ seq}}{\Delta\vdash_n t:T_n}\]
+
+\Prop{}{prop:equivCurrySeq}{$\Delta\vdash_{Curry}t:T$ si et seulement si il exists $n\in\N$ tel que $\Delta\vdash_nt:T$}
+
+\begin{proof}
+Pour les deux sens on procède par induction. Exercice.
+\end{proof}
+
+\paragraph{Exercice} Si $\Delta\vdash_pt:T$ et $\Delta\vdash_qT_0,...,T_n\text{ seq}$ avec $T_0\equiv T$ alors $\Delta\vdash_{p+q-1}t:T_q$
+\paragraph{Exercice} Si $\Delta\vdash_nT_0,...,T_n\text{ seq}$ avec $T_0\equiv U\rightarrow V$ et $T_n\equiv A\rightarrow B$ alors il existe $\overline{X}\subseteq\X$ et $\overline{S}$ une séquence de la même longueur tels que $A\equiv U\brakets{\overline{S}/\overline{X}}$ et $B\equiv V\brakets{\overline{S}/\overline{X}}$
+
+\Lem{}{}{Si $\Delta\vdash_nt:T$ alors $\Delta\brakets{S/X}\vdash_nt:T\brakets{S/X}$}
+\begin{proof}
+Facile, exercice
+\end{proof}
+\Lem{}{}{Si $\Delta,x:S\vdash_n t:T$ et $\Delta\vdash_r s:S$ alors il existe $n'\in\N$ tel que $\Delta\vdash_{n'}t\brakets{s/x}:T$}
+\begin{proof}
+Considérons le cas où $t$ est une variable. \begin{itemize}
+\item Soit $n=0$ et $\rRule{Hyp}{}{\Delta,x:S\vdash_0 t:T}$
+\subitem si $t\equiv x$ $S\equiv T$. Par ailleurs $\Delta\vdash_r s:T$ donc $\Delta\vdash_r t\brakets{s/x}:T$
+\subitem si $t\not\equiv x$ alors $t:T\in\Delta$ et $\rRule{Hyp}{}{\Delta\vdash_0 t:T}$
+\item Soit $n>0$ et alors $\rRule{Sub}{\Delta\vdash_0 t:T_0\ \ \Delta\vdash_nT_0,...,T_n\text{ seq}}{\Delta\vdash_n t:T_n}$. Par l'hypothèse d'induction il existe $n''\in\N$ tel que $\Delta\vdash_{n''}t:T_0$ On conclut alors que $\Delta\vdash_{n+n''-1}t:T_n$ par le premier exercice ci-dessus.
+\end{itemize}
+On procède de même pour les autres cas où $t$ n'est pas une variable.\end{proof}
+
+\Lem{}{}{Si $\Delta\vdash_n(\lambda x.A)\ b:T$ alors il existe $n'\leq 0$ tel que $\Delta\vdash_{n'}a\brakets{b/x}:T$}
+\begin{proof}
+On se limite au cas où $n=0$ on a:
+\[\rRule{\rightarrow_E}{\Delta\vdash_p\lambda x.a:S\rightarrow T\ \ \Delta\vdash_q b:S}{\Delta\vdash_0 (\lambda x.a)\ b:T}\]
+
+\[\rRule{}{\rRule{}{\rRule{}{\Pi}{\Delta,x:U\vdash_r a:V}}{\Delta\vdash_0\lambda x.a:U\rightarrow V}\ \ \Delta\vdash_p F_0,...,F_p\text{ seq}}{\Delta\vdash_p\lambda x.a:S\rightarrow T}\]
+
+Avec $F_0\equiv U\rightarrow V$ et $F_p\equiv S\rightarrow T$. Par le deuxième exercice ci-dessus on obtient les séquences $\overline{X}$ et $\overline{S}$ correspondantes.
+
+Par ailleurs $\rRule{}{\Delta\vdash_0 b:S\ \ \Delta\vdash_q S_0,...,S_q}{\Delta\vdash_q b:S}$ avec $S_q\equiv S$. On en déduit que $\Delta\brakets{\overline{S}.\overline{X}},x:U\brakets{\overline{S}/\overline{X}\vdash_r a:V\brakets{\overline{S}/\overline{X}}}$ puis que $\Delta,x:S\vdash_r a:T$.
+
+Finalement avec de plus $\Delta \vdash_q b$ on en déduit le résultat.
+\end{proof}
+
+\Prop{SR pour le séquencement}{prop:CurrySRseq}{Si $\Delta\vdash_n t:T$ et $t\ \beta_0\ t'$ alors $\Delta\vdash_n t'$}
+
+\begin{proof}
+On a $\rightarrow_\beta\subseteq\beta_0$. On peut conclure dessus. Il suffit alors de revenir sur les autres constructeurs qui définissent $\beta_0$.
+\end{proof}
+
+On peut maintenant revenir sur le théorème \ref{prop:CurrySR}. On conclut avec la proposition \ref{prop:equivCurrySeq}.
 \end{document}
