@@ -791,4 +791,240 @@ Input: a,m,b,n, m,n coprime\\
 Output: x s.t, $x \equiv a \mod m, x \equiv b \mod n$
 Return amu+bnv where mu+nv = 1
 Cost: same as EEA.
+
+\section{Linear Algebra}
+\begin{itemize}
+	\item Row echelon form / Gauss pivoting + applications
+	\item Characteristic polynomial
+\end{itemize}
+Mostly will work over $\K$ commutative field\\
+Assume that operations over $\K$ have O(1) cost.
+
+Basics:\begin{itemize}
+	\item Cost Matrix-vector product = O(mn) O($n^2$) if m = n
+	\item Matrix-Matrix = O(mnk) O($n^3$) if m = n = k, O($n^{\log_2 7}$) (Strassen), O($n^{2.37\dots}$) Coppersmith - Winsgrad et al
+\end{itemize}
+
+\subsection{Row echelon form}
+\Def{}{}{A matrix A $\in M_{m,n}(\K)$ is in row echelon form if
+	\begin{enumerate}
+		\item its zero rowws are at the bottom of the matrix
+		\item The first nonzero coefficient of each row is the right (stricly) of the first non zero coefficient of the previous row
+		\item(optional) this 1st nonzero coefficient is 1.
+	\end{enumerate}}
+	
+	\Def{}{}{The matrix is further said to be in reduced row echelon form if further:
+		
+		4. The first nonzero element in a row the only nonzero element in its column}
+	
+	\Ex{}{}{$\begin{pmatrix}
+		0&1&3&-2&4\\
+		0&0&1&0&1\\
+		0&0&0&0&1\\
+		0&0&0&0&0
+		\end{pmatrix}$ r.e.f\\
+		
+		$\begin{pmatrix}
+		0&1&0&-0&0\\
+		0&0&1&0&0\\
+		0&0&0&0&1\\
+		0&0&0&0&0
+		\end{pmatrix}$ r.r.e.f}
+	
+	\Rem{}{}{If M is square, M r.e.f $\implies$ M upper triangular (because of 2.)}
+	
+	\Prop{}{}{A is r.e.f $\implies \exists$ P a permutation matrix s.t AP $= \begin{pmatrix}
+		T&B\\0&0
+		\end{pmatrix}$, T upper triangular + invertible\\
+		
+		A is r.r.e.f $\implies \exists$ P a permutation matrix s.t. AP $= \begin{pmatrix}
+		I_n&B\\0&0
+		\end{pmatrix}$}
+	
+	\Proof{Multiplying on the right by a permutation matrix amounts to permuting the columns. It then suffices to note that we obtained the desired forms by moving to column i the column containing the unique nonzero element in row i}
+	
+	\subsection{Gauss algorithm}
+	\subsubsection{Elementary operations}
+	Dilations Multiplying on the left by $D_{i\lambda} = Diag(1,1,1,\dots,1,\lambda,1,\dots,1)$ ($\lambda$ at line i)\\
+	
+	Transitions: Multiply on the left by $I_n + \lambda E_{i,j}, i\neq j$
+	
+	Swaps: Multiply on left  by (swap matrix, you know)
+	
+	\subsubsection{Gauss pivoting}
+	0.$j \leftarrow 1, l \leftarrow 1\\
+	1.$Find a pivot : a non zero element in column j in a row $r\geq l$, If there is non, $j \leftarrow j+1$, goto 1 \\
+	2.swap rows r by l\\
+	3.(optional) Divide row l by $a_{l,j}$\\
+	4.For j from l+1 to m do:
+	\indent $L_k \leftarrow L_k - \frac{a_{kj}}{a_{lj}}L_l\\
+	j \leftarrow j+1, l \leftarrow l+1$, goto 1\\
+	
+	Invariants: Before step 1, the part of the matrix which is to the left of column j is r.e.f. + we have a nonzero element in rows $<l$\\
+	
+	What about r.r.e.f ?
+	Change the loop at step 4 in For k from 1 to m, $k \neq j$\\
+	
+	Cost of this algorithm ?
+	Step 1: O(m)\\
+	Step 2: O(1) or O(n)\\
+	Step 3: O(n)\\
+	Step 4: O(mn)\\
+	
+	Every time we go through step 1, j increases by 1 $\implies$ at most n executions of step 1
+	Every time we go through step 2-4, j and l increase by 1 $\implies$ at most min(m,n) executions of steps 2-4.\\
+	
+	Overall O(mn.min(m,n)) (O($n^3$) if m = n)
+	
+	\Rem{}{}{The algorithm actually produces a invertible matrix R (which can be computed on the way) s.t RM is in (r.)r.e.f. (e.g RMP $= \begin{pmatrix}
+		I_n&B\\0&0
+		\end{pmatrix}$ for some permutation matrix P)}
+	\subsection{Rank}
+	\begin{claim}
+		Rank(M) is the number of nonzero rows once M has been put in (r.)r.e.f
+	\end{claim}
+	
+	\begin{proof}
+		Let R.M be the r.e.f of M then rk(RM) = rk(M) since R is invertible.\\
+		Further, $\exists$ P permutation matrix with RMP = $\begin{pmatrix}
+		T&B\\0&0
+		\end{pmatrix}$, T upper triangular with 1 on the diagonal., T on size rk(RMP)\\
+		So rk(RMP) = rk(M) = \#of non zero rows of RM.
+	\end{proof}
+	
+	\subsection{Determinant (so n = m)}
+	\begin{proposition}
+		If j $>$ l at some point, then det M = 0
+	\end{proposition}
+	
+	\begin{proof}
+		Whenever l increases, j increases simultaneously. So j - l is non decreasing. But if j - l $>$ 0 at the end, rows of index $\geq$ l are 0.
+		Otherwise the row echelon form of M is upper triangular with non zero diagonal\\
+		
+		Case 1: We used step 3; then the r.e.f of M has 1 on the diagonal, and det M = $\frac{-1^{\text{\#swaps}}}{\prod(\text{coeffs at step 3})}$\\
+		
+		Case 2: We did not use step 3; then det M = $\#\text{swaps}\prod(\text{diagonal terms of r.e.f of M})$
+	\end{proof}
+	
+	\begin{proof}
+		In full generality, det R det M  = det (RM) = det(r.e.f of M) = $\prod$(diagonal terms of r.e.f of M)
+		
+		Without step 3, R is a product of swaps + transvections; swaps have det = -1, so det R $= (-1)^{\#\text{swaps}}$, transvections have det = 1.
+		With step 3, R also includes dilatations, and det R  $= (-1)^{\#\text{swaps}} \prod(\text{coeffs used at step 3})$\\
+		So if all "principal minors" are $\neq$ 0 we do not have to do swaps.
+	\end{proof}
+	
+	\Rem{}{}{The first time a zero appears on the diagonal during Gauss algorithm, say at line k, is characterized by det(($m_{ij})_{1\leq i,j \leq k}$) = 0}
+	
+	\subsection{Linear system solving, inverse}
+	Assume we want to solve Mx = b.\\
+	We can find R,P s.t RMP = $\begin{pmatrix}
+	I_k&B\\0&0
+	\end{pmatrix}$\\
+	Put y = $P^{-1}x$, then MPy = b, so that RMPy = Rb\\
+	\begin{itemize}
+		\item No solution if Rb does not end with n-k zeroes
+		\item Otherwise, y[1,k] = v[1,k] - By[k+1,n] so for each choice of y[k+1,n] we have a solution y[1,n]\\
+		
+		Notice that $\exists \sigma \in S_n / x_{\sigma(k)} = y_k$ so for each choice of $x_{\sigma(k+1)},\dots,x_{\sigma(n)}$ there is a unique solution x[1,n] 
+	\end{itemize}
+	
+	\begin{remark}
+		If we do r.r.e.f on (M b), we'll get (RM Rb) at least if n$\geq$m\\
+		In particular, for n = m, doing r.r.e.f. on (M $I_r$) gives ($I_r$, R), with R = $M^{-1}$ in time O$(n^3)$
+	\end{remark}
+	
+	\subsection{Kernel}
+	Let M a matrix, and assume RMP = $\begin{pmatrix}
+	I_k&B\\0&0
+	\end{pmatrix}$, R invertible
+	\begin{align*}
+	Ker(RMP) =& \{x | RMPx = 0\}\\
+	=& \{x | MPx = 0\}\\
+	=&\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix}\cdot\begin{pmatrix}
+	x_1\\\dots\\x_{n-k}
+	\end{pmatrix}
+	\end{align*}
+	
+	Indeed, dim Ker(RMP) = n-k, dim $I_m\cdot\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix} = n-k$\\
+	
+	$RMP\cdot\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix} = \begin{pmatrix}
+	I_k&B\\0&0
+	\end{pmatrix}\cdot\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix} = 0\\
+	\implies Ker RMP \supseteq Im\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix}$
+	
+	So Ker RMP = Im$\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix}$\\
+	Ker MP = \{$\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix}\cdot\begin{pmatrix}
+	u_1\\\dots\\u_{n-k}
+	\end{pmatrix}, u_1,\dots,u_{n-k}\in\K$\}\\
+	Ker M = P$\cdot\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix} = Im P\cdot\begin{pmatrix}
+	-B\\I_{n-k}
+	\end{pmatrix}$
+	
+	\subsection{Image}
+	\begin{claim}
+		Assume RMP = $\begin{pmatrix}
+		I_r&A\\0&0
+		\end{pmatrix}$, then Im M has bases R$^{-1}\cdot\begin{pmatrix}
+		I_r\\0_{n-r)}
+		\end{pmatrix}$
+	\end{claim}
+	
+	\begin{proof}
+		Im(RMP) has bases $\begin{pmatrix}
+		I_r\\O_{n-r}
+		\end{pmatrix}$, P invertible.\\
+		Im(RM) = R.Im(M)\\
+		so Im(M) has basis R$^{-1}\cdot\begin{pmatrix}
+		I_r\\0_{n-r)}
+		\end{pmatrix}$
+	\end{proof}
+	
+	\Rem{Final}{}{In the case where we do not do swaps + M square r.e.f can be seen as a decomposition of the form $M = LU$ with L lower tri and U upper tri.\\
+		$LUx = b \Leftrightarrow \left\{\begin{array}{c c c}
+		Ux & = y & O(n^2)\\
+		Ly & = b & O(n^2)
+		\end{array}
+		\right.$ Useful if one wants to solve many linear systems with M}
+	
+	\subsection{Characteristic polynomial}
+	
+	\textbf{\underline{Warning:} Gauss pivoting has \underline{nothing} to do with eigenvalues}
+	
+	To preerve eignevalues, one must use operations $M \rightarrow N^{-1}MN$ whereas Gauss uses $M \rightarrow NM$
+	\subsubsection{Hessenberg form}
+	(see TD)
+	Adaptation of Gauss using transformations $M \rightarrow N^{-1}MN$
+	\subsubsection{Le Verrier's method}
+	\begin{lemma}
+		Newton's identities\\
+		Let P = $\sum_{i = 0}^{n}p_{n-i} X^i \in \K[X]$, Let $\alpha_1,\dots,\alpha_n$ be its roots with multiplicities.\\
+		Define the Newton sums $S_k(P) = \sum_{i = 0}^{n} \alpha_i^k$\\
+		Then, $\forall t < n,$ we have $\sum_{i = 0}^{t} p_iS_{t-i}(P) = (n-t)p_t$
+	\end{lemma}
+	We can deduce $p_1,p_2,\dots,p_n$ from $S_1,\dots,S_n$ and the choice $p_0 = 1$ in time O($n^2$)\\
+	
+	Say now M is a matrix, P its characteristic polynomial. $S_1(P) = Tr(M), S_k(P) = Tr(M^k)$\\
+	
+	Algorithm:
+	Compute Tr(M),Tr(M$^2$),\dots,Tr(M$^n$) and use Newton identities to recover P.
+	
+	Complexity: O($n^4)$
+
 \end{document}
