@@ -85,7 +85,7 @@ Important properties :
 \end{itemize}
 
 \subsection{Complexity classes}
-Conveniant to restrict to boolean function $f:\{0,1\}^*\rightarrow\{0,1\}$\\
+It is convenient and equally strong to restrict to boolean function ${f:\{0,1\}^*\rightarrow\{0,1\}}$\\
 Equivalently : $L = \{x \in \{0,1\}^* : f(x)=1\}$
 
 \begin{definition}
@@ -101,17 +101,19 @@ Equivalently : $L = \{x \in \{0,1\}^* : f(x)=1\}$
 		$u$ is called certificate, witness
 \end{definition}
 
-\subsection{Examples}
-\begin{itemize}
-	\item Any problem in P
-	\item 3-COL = Set of graphs 3-colorable\\
-	$x = \langle G\rangle$ (encoding of graph G)\\
-	$u = \langle C\rangle$ with $C:V\rightarrow{1,2,3}$ a coloring\\
-	$M$ verifies that $C$ is a valid function and that if $(v,w) \in E$, $C(v) \neq C(w)$
-\end{itemize}
-	Alternate def with nondet TM
+\begin{example}
+	The following problems or in NP:
+	\begin{itemize}
+		\item Any problem in P
+		\item 3-COL = Set of graphs 3-colorable\\
+		$x = \langle G\rangle$ (encoding of graph G)\\
+		$u = \langle C\rangle$ with $C:V\rightarrow{1,2,3}$ a coloring\\
+		$M$ verifies that $C$ is a valid function and that if $(v,w) \in E$, $C(v) \neq C(w)$
+	\end{itemize}
+\end{example}
+There is an alternate definition with nondeterministic TM.
 \begin{definition}
-	A k-tape nondeterministic TP (NDTM) is a $(\Gamma,Q,\delta)$
+	A k-tape nondeterministic TM (NDTM) is a $(\Gamma,Q,\delta)$
 	$\Gamma$ alphabet
 	Q state, $q_{start} \in Q$
 	$q_{reject}$, $q_{accept}$
@@ -181,7 +183,7 @@ Simple property : If $A \in$ NP and $B \leq_p A$, then $B \in$ NP
 	we have $x \in B \Leftrightarrow f(x) \in A$
 \end{proof}
 
-\section{A natural NR complete problem : SAT}
+\section{A natural NP complete problem : SAT}
 \begin{definition}
 	Boolean formula $\varphi$,
 	a variable $x_i$
@@ -404,7 +406,7 @@ P $\neq$ EXP (Time hierarchy theorem)
 	L $\subseteq$ NL, PSPACE $\subseteq$ NPSPACE}
 
 \Thm{Space hierarchy theorem}{}{If f and g are space constructible (on input 1$^n$, compute 1$^{S(n)}$ in space O(S(n)) and f = o(g)\\
-DSPACE(f(n)) $\subseteq$ DSPACE(g(n))}
+DSPACE(f(n)) $\subsetneq$ DSPACE(g(n))}
 
 Comparaison with time classes:\\
 Trivial : DTIME(f) $\subseteq$ DSPACE(f), NTIME(f) $\subseteq$ NSPACE(f)\\
