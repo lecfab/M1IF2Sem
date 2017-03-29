@@ -71,6 +71,8 @@
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
 \newcommand{\K}{\mathbb{K}}
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\C}{\mathcal{C}}
@@ -891,7 +893,148 @@ Bad idea: $Sign_k(M)=h(k||M)$, there is a collision resistant $h$ for which this
 
 Query $M$ and gets $t:=Sign_k(M)=H(k||M)=h_s(h_s(h_s(0||k)||M)||2n)$ then $Sign_k(M||2n)=h_s(t||(3n))$. 
 
-There are heuristics constructions of MACs from hash finctions. NMAC (nested MAC) for instance. Let $k=k1||k2$ and $Mac(k,M)=h_{k_2}(MerkleDamgard(k_1,M))$. 
+There are heuristics constructions of MACs from hash functions. NMAC (nested MAC) for instance. Let $k=k1||k2$ and $Mac(k,M)=h_{k_2}(MerkleDamgard(k_1,M))$.
 
 In practice people use HMAC (standardized by NIST): $k_1=k\oplus ipad$, $k_2=k\oplus apad$ with $k$ uniform and $ipad$ and $apad$ standardized (fixed). 
+
+\section{Public key encryption}
+In symmetric cryptography the two users who cant to discuss share a common secret key $k$. Then there are some issues:\begin{itemize}
+\item For $N$ users, we need more than $\Omega(N^2)$ keys if we want them to be able to discuss with each other.
+\item Users have to meet in real life to agree on a key.
+\item They have to do it again regularly to refresh keys.
+\end{itemize}
+A common solution is to rely on a trusted third party (TTP), a key distribution center (KDC). Every user $A$ shares a key $k_A$ with the TTP. \\
+Say $A$ wants to talk with $B$. \begin{itemize}
+\item $A$ contacts the TTP and tells it he wants to discuss with $B$.
+\item TTP sample a fresh key $k_{AB}$ and sends it to $A$ with $c_A = Enc_{k_A}(\brakets{A,B}||k_{AB})$ and also to $B$ with $c_B = Enc_{k_B}(\brakets{A,B}||k_{AB})$
+\item Both of them recover the new key and start talking with it.
+\end{itemize} 
+
+This is passively secure (eavesdropping is impossible) but not secure under active attacks. It is possible to make it secure against active attacks by adding appropriate authentication (with a MAC for instance).
+
+The main issue here is a TTP. This brings security issues and a single point of failure.
+
+For instance, Kerberos, based on a variant of this scheme (Needham-Schroeder). It was used to secure local network.
+
+Question: what can we do without a TTP? Breek through article in 1976, Diffie and Hellman 'New directions in Cryptography". It introduced the concepts of public-key encryption, digital signatures and interactive key exchange (Diffie-Hellman key exchange) that consist in the fact that two persons that have never met before can create a shared secret key over a public channel.
+
+The first candidates for public key encryption was RSA in 1977, Mac Elieck (1978), based on error correcting codes.
+
+\subsection{Public key encryption}
+\Def{Public key encryption}{}{A public key encryption is a triple of PPT algorithm $(Keygen,Enc,Dec)$ such that \begin{itemize}
+\item $Keygen : 1^n \mapsto (pk,sk)$
+\item $Enc : pk,m \mapsto c$ with $m$ the plain-text, $c$ the cipher-text 
+\item $Dec : sk,c \mapsto m'$ and for all $(pk,sk)$ output by $Keygen$, we have $\forall m,Dec_{sk}(Enc_{pk}(m))=m$.
+\end{itemize}}
+
+\Rem Sometimes the correctness requirement is weakened by making it hold with probability close to $1$.
+
+The advantage of such on encryption scheme is that there is one $(pk,sk)$ for each user, and only one. Every one willing to talk with $A$ uses the same public key and only $A$ would decrypt it. Moreover there is no need to meet: the public key is not $A$'s personal web page for instance.
+
+However there are some major drawbacks. We need the secret key ($sk$) to remain secret what may not be as easy as it seems. Moreover never can tell $B$ the the $pk$ he thinks to be $A$'s one is really his. Moreover such a scheme is much more expensive than symmetric encryption.
+
+For the 3d problem, one can use hybrid encryption:
+\subitem Alice publishes her public key $pk_A$.
+\subitem Bob wants to send a long message $m$ to Alice.
+\subitem Bob samples a fresh secret key $k_{AB}\in\bit^n$ for a symmetric encryption scheme.
+\subitem Bob sends $(c_0,c_1)$ to Alice with $c_0=Enc_{pk_A}^{ASYM}(k_AB)$ (Key encapsulation mechanism, KEM) and $c_1=Enc_{k_{AB}}^{SYM}(m)$ (Data encapsulation mechanism, DEM).
+\subitem Alice recovers $k_{AB}$ using $sk_A$ and then $m$ with the recovered key.
+
+If both of the encryption $Enc^{ASYM}$ and $Enc^{SYM}$ are CPA-secure, then the hybrid scheme is still CPA-secure (see TD).
+
+\Def{CPA-security}{def:CPAsecureAsym}{We again play the game:
+
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node	[]	at 	(0,6)	{Challenger};
+\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
+\node	[]	at	(0,4.5)	{$(pk,sk)\leftarrow Keygen(1^n)$};
+
+\draw	[->]	(1.5,4.5)	--node[above]	{$pk$}	(4.5,4.5);
+\draw	[->]	(4.5,3.5)	--node[above]	{$m_0,m_1$}		(1.5,3.5);
+\draw	[->]	(1.5,2.5)	--node[above]	{$c^*=Enc(pk,m_b)$}	(4.5,2.5);
+
+
+\draw	[->]	(4.5,1.5)	--node[above]	{$b'$}		(1.5,1.5);
+\end{tikzpicture}
+\end{center}
+
+Here $Adv_\A=|\Pr(\A\rightarrow 1|b=0)-\Pr(\A\rightarrow 1|b=1)|$. The scheme is CPA-secure if for any PPT $\A$, $Adv_\A$ is negligible of $n$.
+} 
+
+\Rem There are no encryption queries since $\A$ can do encryption by its own using the public key.
+
+\Rem It is almost the same as saying that $\A$ cannot distinguish between the following distribution : $(pk, Enc(pk,m_0))$ and $(pk, Enc(pk,m_1))$.
+
+Not quite because $\A$ chooses $m_0,m_1$ after receiving $pk$. It is correct if plain-text space is $\bit$.
+
+In the symmetric case; CPA-security for one message (stream ciphers) does not implies CPA-security for multiple message (block ciphers) (cf OTP) but in the asymetric case it does (cf tutorial).
+
+We will see the stronger notion of CCA-security later in this course.
+
+\subsection{The discrete logarithm problem (DLP)}
+\Def{DLP}{def:DLP}{Consider a finite cyclic group $G$ (then it is commutative). Consider a generator $g$ of $G$ . The DLP respect to $G$, $DPL_G$, is the following problem:
+
+given $g^a$ for $a\in\Z/q\Z$ uniform, where $q=|G|$ we want to find $a$.
+
+An algorithm is said to succeed if it solve $FLP_G$ with non-negligible probability with respect to randomness of $a$ and the internal randomness.}
+
+\Def{$CDH_G$}{def:CDH}{Computational Diffie-Hellman (CDH): given $g^a,g^b$ for $a,b\hookrightarrow U(\Z/q\Z)$ independent, the problem is to compute $g^{a\times b}$}.
+
+\Rem it is a $\times$ not a $+$ then it is not trivial.
+
+\Def{$DDH_G$}{def:DDH}{Decision Diffie-Hellman: The problem is to distinguish between the distribution $(g^a,g^b,g^c)$ and $(g^a,g^b,g^{ab})$.}
+
+\Rem There are groups for which DDH is easy and CDH is conjectured hard. For instance in $(\Z/n\Z,+)$ it is easy.
+
+Elliptic curves with pairings. There are used a lot for cryptographic design.
+
+\Rem There are reductions from DLP to CDH.
+
+The historical choice was to take $p$ prime a $G$ a subgroup of $(\Z/p\Z^*,\times)$ with $|G|=q$ prime. For security, there should not be small factors for design. It is nice to have it prime as $\Z/q\Z$ is field. An alternative choice was to take a prime-order subgroup of a finite field $(\F_{p^k}^*,\times)$. The modern choice points on elliptic curve over over a finite filed. No sub-exponential algorithm known, then we use small keys in practice.
+
+\paragraph{DLP algorithms} For instance we have:
+
+\subitem Try all x's in $\Z/q\Z$ and check whether $g^x = g^a$ and then $x=a$ in $\F_q$.
+\subitem Try random $x,y$ and test whether $(g^a)^x=(g^a)^yg$ and then $ax=ay+1$ in $F_q$. Then $a(x-y)=1$ in $F_q$ and $a=(x-y)^{-1}$. The cost is about $\sqrt{q}$ (birthday paradox) then $q$ must have at least 160 bits to ensure $2^{80}$ security.
+\subitem For $(\F_p^*,\times)$, general number field Sieve is the best know algorithm. It works in $\exp(c(\log p)^{1/3}(\log\log p)^{2/3})$. In practice, 1024 bits are conjectured to ensure $2^80$ security.
+\subitem For $(\F_{p^k}^*,\times)$, small $p$ is very weak. For $p$ constant there exists a $2^{O((\log k)^2)}$ (Barbulescu,Goudry,Joux and Thomé).
+
+\subsection{The El-Gamel encryption scheme (1984)}
+It relies on a groupe $G$ of prime order $q$ and \begin{itemize}
+\item $Keygen$: samples $x\in F_q$ uniformly. The public key is $h=g^x$ and the secret key is $x$.
+\item $Enc_h(m)$ samples $r\in\F_q$ uniformly and sends $c=(c_0,c_1)=(g^r,mh^r)\in G^2$
+\item $Dec_x((c_0,c_1))$ returns $c_1/c_0^x$ since $mh^r/g^{rx}=mh^r/h^r=m$
+\end{itemize}
+
+\Rem We assume that $m\in G$.
+
+\Thm{}{}{If $DDH_G$ is hard then El Gamel is CPA secure.}
+
+\begin{proof}
+Consider the following game:
+	
+\begin{center}
+\begin{tikzpicture}[>=latex]
+\node at (-6,6) {$\mathcal{C}$};
+\node	[]	at 	(0,6)	{$\B$};
+\node	[]	at	(6,6)	{$\A$};
+\node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
+\node	[]	at	(0,4.5)	{$(pk,sk)\leftarrow Keygen(1^n)$};
+
+\draw [->] (-4,5) --node[above] {$g^a,g^b,g^{ab}$ or $g^c$} (-2,5);
+
+\draw	[->]	(1.5,4.5)	--node[above]	{$pk$}	(4.5,4.5);
+\draw	[->]	(4.5,3.5)	--node[above]	{$m_0,m_1$}		(1.5,3.5);
+\draw	[->]	(1.5,2.5)	--node[above]	{$c=(g^r,m_\beta h^r)$}	(4.5,2.5);
+
+
+\draw	[->]	(4.5,1.5)	--node[above]	{$\beta'$}		(1.5,1.5);
+\end{tikzpicture}
+\end{center}
+
+We will get a DDH solver.
+\end{proof}
+
 \end{document}
