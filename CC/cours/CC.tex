@@ -686,5 +686,115 @@ In other words, is the answer the same in all oracle worlds ?
 		\item P = NP $\implies P^O = NP^O$ is not clear. Could be that nondet doesn't help but if there is an oracle O, starts being helpful.
 		\item "There is an oracle B relative to which P $\neq$ NP"
 	\end{itemize}}
+\Proof{
+\begin{itemize}
+	\item Oracle A. A = TQBF.\\
+	We show that $P^{TQBF} = NP^{TQBF} =$ PSPACE.\\
+	
+	PSPACE $\subseteq P^{TQBF}$\\
+	For all $L \in$ PSPACE, there exists f computable in poly time s.t : $x \in L \Leftrightarrow f(x) \in TQBF$, so compute f(x) and query TQBF oracle.\\
+	
+	$NP^{TQBF} \subseteq$ PSPACE.\\
+	Simulate the $NP^{TQBF}$ machine.
+	\begin{itemize}
+		\item Enumerate all paths of $NP^{TQBF}$ machine
+		\item If there is a query "$u \in TQBF$ run TQBF subroutine.
+	\end{itemize}
+	Accept if one path accepted.
+	
+	\item B such that $P^B \neq NP^B$\\
+	We will construct $L \in NP^B$ but not $P^B$.\\
+	For a language B $\subseteq \{0,1\}*$, define $L_B = \{1^n |\exists x\in B,|x| = n \}$\\
+	$L_B \in NP^B$ : on input $1^n$, guess $x\in \{0,1\}^n$, and query oracle on x. If $x\in B$ accept, otherwise reject.\\
+	
+	Objective: Construct B such that $L_B \notin P^B$\\
+	
+	Fact: There is an enumeration of polynomial-time turing machine: 
+	Take usual enumeration of all machines $\{M_\alpha\}_{\alpha\in\N} \rightarrow$ Add a tape counting number of steps, if $\geq \alpha + n^\alpha$ steps, stop and reject.\\
+	This gives a list $\{M'_\alpha\}_{\alpha\in\N}$\begin{itemize}
+		\item For all $\alpha$, $M'_\alpha$ runs in poly time
+		\item Let $M_\alpha$ be a polytime Turing machine running in time p(n). If for all n, $\alpha + n^\alpha \geq p(n) \implies M_\alpha$ and $M'_\alpha$ have the same output. If $p(n) > \alpha + n^\alpha$, then there is an equivalent machine $M_{\alpha'}$ which behaves as $M_\alpha$ (for example, add useless states)
+	\end{itemize}
+	This also works for oracle machines.\\
+	
+	Let $\{M_\alpha\}_{\alpha\in\N}$ be an enumeration of polynomial time TIMs with oracle.\\
+	Define B: $B = \bigcup_{\alpha\in\N} B_\alpha$.
+	We have $B_\alpha \subseteq \{0,1\}^{u_\alpha}$.\\
+	$B_0 = \emptyset$, $u_0 = 0$.\\
+	Suppose we have $u_0,u_1,\dots,u_{\alpha-1},B_0,B_1,\dots,B_{\alpha-1}$\\
+	Def of $u_\alpha$: Execution of M$_{\alpha-1}^{B_1\cup B_2 \cup \dots B_{\alpha - 1}}(1^{u_{\alpha-1}})$. It makes some queries to oracle. Let $v\in\N$ longuest queried word. We want $u_\alpha > \max(u_{\alpha-1},v)$ ($\star$). (To make sure that adding $B_\alpha$ to oracle language will not interfere executio of $M_{\alpha-1}^{B_1\cup B_2 \cup \dots B_{\alpha - 1}}(1^{u_{\alpha-1}})$)\\
+	($\star\star$) If T(n) running time of $M_{\alpha}^{B_1\cup B_2 \cup \dots B_{\alpha - 1}}(1^{u_{\alpha-1}})$ want T($u_\alpha) < 2^{u_\alpha}$.
+	
+	Choose $u_\alpha$ to satisfy ($\star\star$) and ($\star$)\\
+	
+	Def of $B_\alpha$:
+	\begin{enumerate}
+		\item If $M_{\alpha}^{B_1\cup B_2 \cup \dots B_{\alpha - 1}}(1^{u_{\alpha}})$ = 0. then $B_\alpha = \{a\in\{0,1\}^{u_\alpha}, M_{\alpha}^{B_1\cup B_2 \cup \dots B_{\alpha - 1}}(1^{u_{\alpha}}) $ does not query $a\} \neq \emptyset$
+		\item If $M_{\alpha}^{B_1\cup B_2 \cup \dots B_{\alpha - 1}}(1^{u_{\alpha}}) = 1$, $B_\alpha = \emptyset$
+	\end{enumerate}
+	
+\Rem{}{}{In both case $M_{\alpha}^{B_1\cup B_2 \cup \dots B_{\alpha}}(1^{u_{\alpha}})$ = $M_{\alpha}^{B_1\cup B_2 \cup \dots B_{\alpha - 1}}(1^{u_{\alpha}})$}
 
+Want to show: $L_B\not\in P^B$. Suppose $M^B_{\alpha_0}$ decides $L_B$. Consider $M^B_{\alpha_0}(1^{u_{\alpha_0}})$. For that relate $M_{\alpha_0}^{B_1\cup B_2 \cup \dots B_{\alpha_0}}(1^{u_{\alpha_0}})$ and $M_{\alpha_0}^{B}(1^{u_{\alpha_0}})$. There is a difference only if query a word of length $\geq u_{\alpha_0 + 1}$. But by condition ($\star$), $M_{\alpha_0}^{B_1\cup B_2 \cup \dots B_{\alpha _0}}(1^{u_{\alpha_0}})$ never queries a word larger that $u_{\alpha_0 + 1} \implies M_{\alpha_0}^{B}(1^{u_{\alpha_0}}) = M_{\alpha_0}^{B_1\cup B_2 \cup \dots B_{\alpha_0}}(1^{u_{\alpha_0}})$\\
+
+Suppose \begin{itemize}
+	\item $M_{\alpha_0}^{B_1\cup B_2 \cup \dots B_{\alpha_0}}(1^{u_{\alpha_0}}) = 1 \implies B_{u_{\alpha_0}} = \emptyset \implies 1^{u_{\alpha_0}}\notin L_B$. Contradiction.
+		\item $M_{\alpha_0}^{B_1\cup B_2 \cup \dots B_{\alpha_0}}(1^{u_{\alpha_0}}) = 0 \implies B_{u_{\alpha_0}} \neq \emptyset \implies 1^{u_{\alpha_0}}\in L_B$. Contradiction.
+\end{itemize}
+\end{itemize}
+}
+
+Polynomial hierarchy:
+ExactIndSet: $\{(G,k)|$ the largest indep set of G is of size exactly k$\} = \{(G,k)|\exists u_1\forall u_2(u_1$ is an indep set of size k) and (if $u_2$ is of size $>$ k $\implies$ not an indep set$)\}$
+
+\begin{definition}
+	The class $\Sigma_{i}^{P}$ is the set of languages for which there is a poly-time machine M and a polynomial q s.t $x\in L \Leftrightarrow \exists u_1\in\{0,1\}^{q(|x|)},\forall u_2\in\{0,1\}^{q(|x|)},\dots,Q_i u_i\in\{0,1\}^{q(|x|)} : M(x,u_1,\dots,u_i) = 1$ (with alternance)
+\end{definition}
+
+\Ex{}{}{\begin{itemize}
+		\item $\Sigma_{0}^{P} = P$
+		\item $\Sigma_{1}^{P} = NP$
+		\item $\Sigma_{2}^{P}$ contains NP and coNP
+	\end{itemize}}
+	
+\begin{definition}
+	$\Pi_{i}^{P} = co\Sigma_{i}^{P}$\\
+	$\Pi_{0}^{P} = P,\Pi_{1}^{P} = coNP, \Pi_{2}^{P}$ contains NP and coNP.
+\end{definition}
+
+Simple properties: $\Sigma_{i}^{P} \subseteq \Sigma_{i+1}^{P}$,
+
+ $\Sigma_{i}^{P} \subseteq \Pi_{i+1}^{P} \subseteq \Sigma_{i+2}^{P}$ 
+ 
+ $PH (= \bigcup\limits_{i}\Sigma_{i}^{P}) \subseteq$ PSPACE\\
+ 
+ Common belief: $P \neq NP, NP \neq coNP, \Sigma_{i} \neq \Pi_{i}$
+ 
+\begin{theorem}
+	For all i $\geq 1$, if $\Sigma_{i}^{P} = \Pi_{i}^{P}$ then $\Sigma_{i}^{P} = PH$
+\end{theorem}
+The poly hierarchy collapses to level i.
+\begin{proof}
+	Consider $L \in \Sigma_{i+1}^{P}$.\\
+	$x \in L \Leftrightarrow u_1 \in \{0,1\} \forall u_2 \dots : M(x,u_1,\dots,u_{i+1}) = 1$.\\
+	$L' = \{(x,u_1): \forall u_2, \dots:M(x,u_1,\dots,u_{i+1}) = 1\}$\\
+	$L' \in \Pi_i^P = \Sigma_i^P$. So there is a polytime M' s.t
+	\begin{align*}
+		(x,u_1)\in L & \Leftrightarrow  \exists u_2'\forall u_3'\dots M'(x,u_1,u_2',\dots,u'_{i+1}) = 1.\\
+		\text{But } x\in L & \Leftrightarrow  \exists u_1 (x,u_1) \in L'\\
+		& \Leftrightarrow \exists u_1 \exists u_2' \dots M(x,u_1,u_2',\dots) = 1.\\
+		u_1||u_2' = u_1 \in \{0,1\}^{q(|x|)+q'(|x|)}
+	\end{align*}
+	So $L \in \Sigma_i^P$, So $\Sigma_{i+1}^P = \Sigma_i^P$.\\
+	$\Pi_{i+1}^P = co\Sigma_{i+1}^P = co\Sigma_i^P = \Pi_i^P$
+	So by induction, $\Sigma_j = \Pi_j = \Sigma_i = \Pi_i$ for all $j \geq i \implies PH = \Sigma_i$
+\end{proof}
+
+\begin{theorem}
+	For every $i \geq 1, \Sigma_0^P = P.\\
+	\Sigma_i^P = NP^{\Sigma_{i-1}^P}$
+\end{theorem}
+
+\Rem{}{}{$NP^{\mathcal{C}} = \bigcup\limits_{L\in\mathcal{C}} NP^L$\\
+	$\Sigma_2^P = NP^{NP}= NP^{SAT}$}
 \end{document}
