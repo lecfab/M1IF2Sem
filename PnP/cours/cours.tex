@@ -273,7 +273,11 @@ Si $e\in\mathcal{N}$ on notera $l(e)$ la somme des longueurs de toutes les rédu
 \item $\beta_0$ n'est pas normalisante. Par exemple $\Omega\equiv (\lambda x.x\ x)\ (\lambda x.x\ x)$ se réduit vers lui même.
 \end{itemize}}
 
-\Lem{}{}{Si $b\in\mathcal{N}$ et si $a\brakets{b/x} \overline{u} \in\mathcal{N}$ alors $(\lambda x.a)\ b \overline{u}\in\mathcal{N}$}
+\Lem{}{}{Si $b\in\mathcal{N}$ et si $a\brakets{b/x}\ \overline{u} \in\mathcal{N}$ alors $(\lambda x.a)\ b\ \overline{u}\in\mathcal{N}$}
+
+\begin{proof}
+La preuve se fait par récurrence sur $l(b)+l(a\brakets{b/x}\ \overline{u})$. Il suffit de montrer que l'ensemble des successeurs pour $\beta_0$ de $(\lambda x.a)\ b\ \overline{u}$, $Succ((\lambda x.a)\ b\ \overline{u})\subseteq\mathcal{N}$
+\end{proof}
 
 \underline{Remarque : } L'hypothèse $b\in\mathcal{N}$ est inutile. $(\lambda x.\lambda y.t)\ \Omega\notin\mathcal{N}$ alors que $\lambda y.y\in\mathcal{N}$.
 
@@ -368,6 +372,49 @@ Soit $\Omega\equiv (\lambda x.x\ x)\ (\lambda x.x\ x)$.
 Soit $Y = \lambda f(\lambda x.f\ (x\ x))\ (\lambda x.f\ (x\ x)).$
 
 Ces termes n'admettent pas de forme normale et se dérivent infiniment.
+
+\subsection{Parties saturées de $\Lambda$}
+\Def{Partie saturée}{def:partSaturee}{Soit $S\subseteq\Lambda$, un ensemble de $\lambda$-termes. On dit que $S$ est saturée si elle satisfait les conditions suivantes : \begin{itemize}
+\item $\mathcal{N}_0\subseteq S\subseteq\mathcal{N}$
+\item si $e\in S$ et $e\ \beta_0^*\ e'$ alors $e'\in S$
+\item si $e\in\Lambda$ et $e$ n'est pas une $\lambda$-abstraction et si $Succ(e)\subseteq S$, alors $e\in S$.
+\end{itemize}
+
+On note $(\Lambda)$ l'ensemble des parties saturées de $\Lambda$.}
+
+\Prop{}{prop:partSat}{On a les propriétés suivantes :
+\begin{itemize}
+\item $\mathcal{N}_0$ est saturée.
+\item $\mathcal{N}$ est saturée.
+\item Si $X$ et $Y$ sont des parties saturées alors $X\rightarrow Y\equiv\{e\in\Lambda|\forall a\in X, e\ a\in Y\}$ est elle-même saturée.
+\end{itemize}}
+
+\begin{proof}
+On démontre les points dans l'ordre :
+\begin{itemize}
+\item Le premier point est en exercice.
+\item Pour le deuxième points il suffit de vérifier la dernière propriété de la définition.
+
+En clair soit $e\in\Lambda$ qui n'est pas une $\lambda$-abstraction et tel que $Succ(e)\subseteq\mathcal{N}$. On procède par induction structurelle sur $e$ :
+\begin{itemize}
+\item si $e\in\X$ c'est trivial
+\item si $e\equiv e_0\ a$ avec $Succ(e)\subseteq\mathcal{N}$. Alors 
+\subitem $e\ \beta_0\ e_0'\ a$ avec $e_0\ \beta_0\ e_0'$
+\subitem $e\ \beta_0\ e_0\ a'$ avec $a\ \beta_0\ a'$
+\subitem $e\ \beta_0\ e_1\brakets{a/x}$ avec $e_0\equiv\lambda x.e_1$
+
+Les successeurs sont dans $\mathcal{N}$ donc on a encore $e\in\mathcal{N}$.
+\end{itemize}
+\item Soit $X,Y\in(\Lambda)$. Montrons que $X\rightarrow Y\in(\Lambda)$.
+\begin{itemize}
+\item On a $\mathcal{N}_0\subseteq X\rightarrow Y$. Soit $x\ \overline{u}\in\mathcal{N_0}$. Soit $a\in X\subseteq\mathcal{N}$. Alors $x\ \overline{u}\ a\in\mathcal{N}_0\subseteq Y$. D'où le résultat. 
+
+On a aussi $X\rightarrow Y\subseteq\mathcal{N}$, car sinon $e\ a\in Y$ n'est pas fortement normalisant.
+\item La deuxième propriété est facile. Soit $e\in X\rightarrow Y$ et $e\ \beta_0\ e'$. Alors soit $a\in X$ alors $(e\ a)\ \beta_0\ (e'\ a)$ et $(e\ a)\in Y$. Or $Succ(e\ a)\subseteq Y$, d'où $e'\ a\in Y$.
+\item Soit $e$ qui n'est pas une abstraction telle que $Succ(e)\in X\rightarrow Y$. Soit $a\in X$. Il s'agit de montrer que $e\ a\in Y$. Il suffit de vérifier que $Succ(e\ a)\in Y$ et on fini la démonstration par récurrence sur $l(a)$.
+\end{itemize}
+\end{itemize}
+\end{proof}
 
 \section{Calcul propositionnel (cf. notes de P.Audebaud)}
 \subsection{Éléments de langage (informel)}
@@ -492,6 +539,34 @@ La preuve se fait en deux parties, poser les notions générales et l'adaptation
 
 \subsection{Correspondance de Curry-Howard.}
 CF notes en ligne.
+
+\subsection{Normalisation forte pour $\lambda_\rightarrow$}
+\Thm{SN}{}{Si $\Delta\vdash_{\lambda_\rightarrow}e:T$ alors $e\in\mathcal{N}$.}
+
+Pour prouver cela on interprète les types comme des parties saturés. On utilisera un lemme d'adéquation et on confluera le théorème comme un corollaire.
+
+\Def{}{}{Soit $\rho\in\mathcal{V}\rightarrow(\Lambda)$ ($\mathcal{V}$ est la collection des variables de types). On définit l'interprétation d'un terme $T$ selon $\rho$, noté $\llbracket T\rrbracket\rho$ est définit par :\begin{itemize}
+\item si $T\in\mathcal{V}$ alors $\llbracket T\rrbracket\rho\equiv\rho(T)$
+\item si $T\equiv U\rightarrow V$ alors $\llbracket T\rrbracket\rho\equiv\llbracket U\rrbracket\rho\rightarrow\llbracket V\rrbracket\rho$
+\end{itemize}}
+
+Par la proposition \ref{prop:partSat} $\llbracket T\rrbracket\rho$ est une partie saturée et $\rho$ existe. 
+
+Remarquons que $\llbracket T\rrbracket\rho$ ne dépend que de $\rho_{|FT(T)}$.
+
+\Def{}{}{Soit $x_1,...x_n\in\X$ et $t_1,...,t_n\in\Lambda$ la substitution $\sigma\equiv\brakets{t_1/x_1,...,t_n/x_n}$ donne lieu à $\sigma(t)$ pour $t\in\Lambda$ comme le $\brakets{\cdot/\cdot}$ définit précédemment.}
+
+\Prop{}{}{Soit $\rho$ une interprétation de types et $\Delta\vdash_{\lambda_\rightarrow}t:T$; Soit $\sigma$ une substitution telle que $dom(\sigma)\subseteq FV(\Delta)$, telle que pour tout $x:S\in\Delta$, $\sigma(x)\in\llbracket S\rrbracket\rho$ on a $\sigma(t)\in\llbracket T\rrbracket\rho$.}
+
+\begin{proof}
+On prouve cela par induction sur la hauteur de la dérivation. Le seul cas intéressant est le cas de $(\rightarrow_I)$.
+\[\rRule{\rightarrow}{\Delta,x:U\vdash a:V}{\Delta\vdash t:U\rightarrow V}\]
+avec $t\equiv\lambda x.a$. Soit $\sigma$ de domaine dans $FV(\Delta)$. Montrons que si pour tout $x:S\in\Delta$, $\sigma(x)\in\llbracket S\rrbracket\rho$ on a $\sigma(t)\in\llbracket T\rrbracket\rho$. avec $T=U\rightarrow V$. Par définition cela revient à montrer que pour tout $b\in\llbracket U\rrbracket\rho$, $\sigma(\lambda x.a)\ b\in\llbracket V\rrbracket\rho$.
+
+On peut faire en sorte que $x$ ne soit une nouvelle variable. Considérons alors $\sigma'\equiv\brakets{t_1/x_1,...,t_n/x_n,b/a}$. On a alors $\sigma(\lambda x.a)\ b\equiv\sigma'(a)$. On peut appliquer l'hypothèse d'induction sur $\sigma'$. Finalement $(\lambda x.\sigma(a))\ b\ \beta_0\ \sigma'(a)\in\llbracket V\rrbracket\rho$ avec $b\in\llbracket U\rrbracket\rho\subseteq\mathcal{N}$. Donc $(\lambda x.\sigma(a))\ b\in \llbracket V\rrbracket\rho$.
+
+En résumé $\lambda x.\sigma(a)\equiv\sigma(\lambda x.a)\in\llbracket U\rightarrow V\rrbracket\rho$ et $\sigma(t)\equiv\lambda x.\sigma(t_0)$. Si $t\equiv a\ b$ alors $\sigma(t)\equiv \sigma(a)\ \sigma(b)$.
+\end{proof}
 
 \section{Polymorphisme}
 Jusque là on peut résumer à la situation au tableau suivant :
