@@ -1208,5 +1208,159 @@ This is just one version of Gauss pivoting on a 2x2 matrix + avoid using commuta
 \end{corollary}
 Algo: Inverse(A)\\
 Recursive call of size n/2 to get $a^{-1}$ compute sc + recursive call to get $sc^{-1}$, compute the product above.
-Cost: MI(n) = 2MI(n/2) + O(MM(n/2)) -> MI(n) = O(MM(n)) (recall that MM(n)) >> $n^2$
+Cost: MI(n) = 2MI(n/2) + O(MM(n/2)) -> MI(n) = O(MM(n)) (recall that MM(n)) $>>$ $n^2$
+
+\subsection{Sparse linear algebra}
+The sparse representation of a matrix M is a list of triples (i,j,$m_{ij}$) such that if (i,j) does not appear in the list, $m_{ij} = 0$.
+We'll denote by $\omega(M)$ the number of nonzero coefficients of M ; then M has a sparse representation of size O($\omega(M)\log n$)
+
+\subsubsection{Matrix-vector product}
+Let M be in sparse representation of size $O(\omega(M)\log n)$, then M.v can be computed in time $O(\omega(M)\log n)$ (actually, $O(\omega(M))$ field operations)\\\\
+Algorithm:\\
+Input: List L of $(i,j,m_{ij}) ; (v_i)$\\
+Output $(w_i)$\\
+$(w_i) \leftarrow (0)$\\
+For $(i,j,m_{ij})$ in L do\\
+\indent $w_i \leftarrow w_i + m_{ij}.v_j$\\
+Return $(w_i)$
+
+\subsubsection{Matrix addition}
+$M_1,M_2$ sparse repr of size $O(\omega(M_1)\log n), O(\omega(M_2)\log n)$\\
+
+Two solutions:\begin{itemize}
+	\item Keep sorted lists and do a merge of the two ; when (i,j) apperas in the 2 lists, we perform the add.\\
+	Cost: $O((\omega(M_1)+\omega(M_2))\log n)$
+	\item Keep a pointer to the end of the lists and use it to concatenate the 2 lists: cost O(1). (Lazy evaluation).\\
+	From time to time one might want to normalize: sort \& remove duplicates.
+\end{itemize}
+
+\subsubsection{Sparse linear system solving}
+Encountered:\begin{itemize}
+	\item Numerical solution of differential equations;
+	\item integer factorization
+\end{itemize}
+
+\begin{claim}
+	A linear system $M.x = b$ can be solved by using O(n) matrix-vector products.
+\end{claim}
+\begin{proof}
+	Strategy :\\
+	Assume that M is invertible.\\
+	Let $P \in \K[X], \left\{\begin{array}{l l}
+	P(M) = 0 = \sum\limits_{i = 1}^d p_iM^i + p_0I_n.\\
+	P(0) \neq 0
+	\end{array}\right.\\
+	Mx = b \Leftrightarrow x = -\sum_{i = 1}^{d} \frac{p_i}{p_0}M^{i-1}b.$\\
+	If we compute it in "a Horner way", we only do d matrix-vector products and d vector additions.\\
+	
+	Overall $O(d(\omega(M)+n))$ operations. As M invertible we must have $\omega(M) \geq n$, so this is $O(d\omega(M))$
+\end{proof}
+How do we find P ?
+\begin{itemize}
+	\item compute the charact. poly $\rightarrow$ too costly
+	\item pick a random $u \in \K[X]$ and search for $\lambda_0,\dots,\lambda_d$ s.t $\sum_{i=0}^{d}\lambda_i M^i u = 0$\\
+	This can be seen as a linear system with unknowns $\lambda_0,\dots,\lambda_d$ with n equations. It has a nontrivial solution as soon as $d \geq n$.\\
+	But we reduce sparse linear system solving to dense linear system solving.
+	\item Pick also a random v, and search for $\lambda_i$ s.t $\sum \lambda_iv^t.M^i.u = 0$. Hopefully we'll have $\sum\lambda_iM^i = 0$
+\end{itemize}
+Let $(z_i)$ be the sequence $z_i = v^tM^iu$
+\begin{claim}
+	$(z_i)$ is a linear recurrent sequence, i.e $\exists d,\alpha_j$, s.t $\forall i \geq d, z_i = \sum_{k=0}^{d-1}\alpha_k z_{i-1-k}$
+\end{claim}
+\begin{proof}
+	Indeed, $\exists P\neq 0, P(M) = 0,\\
+	\text{so } \forall k, M^k P(M) = 0\\
+	v^t M^k P(M) u = 0\\
+	$so that $\sum_{i=0}^{d}p_i v^t M^{ki} u = 0, p_d\neq 0\\
+	$so $\sum_{i = 0}^d p_i z_{i+k} = 0, $ so $ z_{k+d} = \sum_{i = 0}^{d - 1} -\frac{p_i}{p_d} z_{k+i}$
+\end{proof}
+Let $(z_i)$ a sequence which we know to be linear recurrent of order d.\\
+Let $Z(X) = \sum_{i = 1}^{2d - 1} z_i X^i$.
+Let say that $z_i = \sum_{k = 0}^{d - 1}\alpha_k z_{i-k}$ and define $A(X) = X^d - \sum_{k= 0}^{d-1}\alpha_k X^k$\\
+Let $Q(X) = Z(X)A(X) \mod X^d, \deg Q \leq d - 1$\\
+Then $\forall N \geq 1, \frac{Q(X)}{A(X)} \mod X^N = \sum_{i = 0}^{N -1}z_i X^i$\\
+(proof as exercise)\\
+
+We want A(X), in order to get this, we start from $\frac{Q(X)}{A(X)} = \sum_{i = 0}^{2d - 1}z_i X^i\\(:= Z_{2d}(X)) \mod X^{2d}$
+
+\begin{claim}
+	There is at most one $\frac{R(X)}{A(X)}$ with $\deg A \leq d$, s.t $R(X) = A(X) Z_{2d}(X) \mod X^{2d}$ has degree $\leq d-1$
+\end{claim}
+\begin{proof}
+Assume $R_1(X) = A_1(X)Z_{2d}(X) \mod X^{2d}$ has degree $\leq d-1$,\\
+$R_2(X) = A_2(X)Z_{2d}(X) \mod X^{2d}$ has degree $\leq d-1$.\\
+Then $R_1A_2 -R_2A_1 = 0 \mod X^{2d}$ and has degree $\leq 2d -1$\\
+So, $R_1A_2 -R_2A_1 = 0 \implies \frac{R_1}{A_1} = \frac{R_2}{A_2}$.\\
+
+Why is A not unique:\\
+Take $z_{i+1} = 2z_i, z_i = 2^i\\A_1(X) = X - 2$\\
+now $z_{i+2} = (z_{i+1} + z_i).\frac{2}{3}\\A_2(X) = X^2 - \frac{2}{3}X - \frac{2}{3}$\\
+
+How do we find A,Q from $Z_{2d}$:
+Do EEA on $X^{2d}$ and $Z^{2d}$. We get $U_i X^{2d} + V_i Z_{2d} = R_i \forall i$\\
+Stop as soon as $\deg R_i \leq d-1$. I claim that $\deg V_i \leq d$, and we have $V_i Z_{2d} = R_i \mod X^{2d}$, so $A(X) = U_i(X)$ works.
+\end{proof}
+
+\underline{Wiedemann's algorithm}
+\begin{enumerate}
+	\item Pick u,v random on $\K^n$
+	\item Compute $z_0,\dots,z_{2k-1}$ where $z_i = v^tM^iu.$
+	\item Do EEA on $X^{2n}, \sum_{i = 0}^{2n -1}z_i X^i$ until the remainder $R_i$ has degree $\leq n-1$
+	\item Put $P(X) := V_i(X),$ if $P(0) = 0,$ start ouver, and compute $W = -\sum_{i = 1}^d \frac{p_i}{p_0} M^{i-1} b.$
+	\item If $Mw = b$, returns w, otherwise restart.
+\end{enumerate}
+Cost:
+\begin{enumerate}
+	\item O(n)
+	\item $y_i = M^iu$ O(n) M-vector product\\
+	$R_i = v^ty_i$ O(n) scalar products\\
+	$\rightarrow O(n^2)$
+	\item EEA $O(n^2)$
+	\item O(n) M-vector products\\
+	O(n) vector additions
+	$\rightarrow O(n^2)$
+	\item 1 M-vector product
+\end{enumerate}
+Overall, $O(n\omega(M))$ operations.
+\subsection{Eigenvalues over $\R$}
+\subsubsection{The power iteration method}
+Let A be a matrix in $M_n(\R), b_0 \in [-1,1]^n$ a random vector.\\
+Define $b_{n+1} = \frac{A b_n}{||A b_n||}$, if well defined (if not, start over)
+
+\begin{theorem}
+	If A has a dominant eigenvalue $\lambda$ (i,e $\forall \mu \in Sp(A), \mu = \lambda$ or $ |\mu| < |\lambda|$), then with probability 1, a subsequence of ($b_n)$ converges to an eigenvector for $\lambda$
+\end{theorem}
+
+\begin{proof}
+	Start with A diagonalizable.\\
+	Let $Sp(A) = \{\lambda_1,\dots,\lambda_n\}, |\lambda_i|_{i\neq1} < |\lambda| = |\lambda_1|$
+	Then, $\exists v_1,\dots,v_n,\mu_1,\dots,\mu_n$ s.t, $v_i$ is an eigenvector for the eigenvalue $\lambda_i$
+	\begin{align*}
+	b_0 & = \sum \mu_iv_i\\
+	\vdots\\
+	b_N & = \frac{\sum \mu_i \lambda_i^N v_i}{||\dots||}
+	\end{align*}
+	Now, $\sum \mu_i \lambda_i^N v_i = \mu_1 \lambda_1^N v_1 + O((\frac{\max\limits_{i > 1}|\lambda_i|}{\lambda_1})^N)
+	\\
+	||b_N|| = |\mu_1 \lambda_1^N|.||v_1|| + O((\frac{\max\limits_{i > 1}|\lambda_i|}{\lambda_1})^N)$\\
+	Overall, $b_N = \frac{\mu_1 \lambda_1^N}{|\mu_1 \lambda_1^N} \frac{v_1}{||v_1||} + O((\frac{\max\limits_{i > 1}|\lambda_i|}{\lambda_1})^N) (:= O(\delta^N))$\\
+	
+	$b_N$ is bounded, it has a convergent subsequence ; and the limit of this subsequence is obviously of the form $\alpha v_1$ for some $\alpha \in R$
+\end{proof}
+
+\begin{remark}
+	If $\lambda_1 \in \R > 0, b_N = \frac{\mu_1}{|\mu_1|} \frac{v_1}{||v_1||} + O(\delta^N)$, so $b_N$ itself converges to $\alpha v_1$
+\end{remark}
+\begin{remark}
+	Even if $b_N$ does not converges, we can estimate $\lambda$ as $b_N = \alpha_N.v_1 + O(\delta^N)\\
+	\implies A b_N = \lambda \alpha_N v_1 + O(\delta^N)$ which allows to deduce $\lambda$ to a precision $\delta^N$.
+\end{remark}
+Cost: Assume we want precision $2^{-k}$, then $N = \frac{k\log2}{\log\delta}$.\\
+Cost O($\frac{k\log2}{\log\delta}n^2$) ($n^2$ from matrix-vector products), the cost depends on the spectral gap $\delta$\\
+
+The theorem does not hold if we have 2 dominant eigenvalues e.g $A = \begin{pmatrix}
+1&0\\0&-1
+\end{pmatrix},$ for $b_0 = \begin{pmatrix}\alpha\\\beta\end{pmatrix}, b_N = \begin{pmatrix}
+\alpha\\(-1)^N\beta
+\end{pmatrix}$, so $b_{2N}$ and $b_{2N+1}$ converge, but not to eigenvectors.
 \end{document}
