@@ -340,7 +340,7 @@ $Adv_\A=|\Pr(\A^{Exp_1}(1^\lambda)=1)-\Pr(\A^{Exp_0}(1^\lambda)=1)|$.
 \begin{center}
 \begin{tikzpicture}[>=latex]
 \node	[]	at 	(0,6)	{Challenger};
-\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(6,6)	{Adversary};
 \node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
 \node	[]	at	(0,4)	{$k\hookrightarrow Keygen(1^\lambda)$};
 \node	[]	at	(0,1)	{Test if $b=b'$};
@@ -511,7 +511,7 @@ We consider the two experiments $Exp_{Unif}$ and $Exp_F$ that are the equivalent
 \begin{center}
 \begin{tikzpicture}[>=latex]
 \node	[]	at 	(0,6)	{Challenger};
-\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(6,6)	{Adversary};
 \node	[]	at	(0,5.5)	{$b\hookrightarrow U(\{0,1\})$};
 \node	[]	at	(0,5)	{$f\hookrightarrow U(\bit^n\rightarrow\bit^m)$};
 \node 	[]	at	(0,4.5)	{$k\hookrightarrow U(\{0,1\}^t)$};
@@ -761,7 +761,7 @@ MACS are crucial for CCA-secure encryption: CPA-secure encryption scheme and a M
 \begin{center}
 \begin{tikzpicture}[>=latex]
 \node	[]	at 	(0,6)	{Challenger};
-\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(6,6)	{Adversary};
 \node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
 \node	[]	at	(0,4.5)	{$k\leftarrow Keygen(1^\lambda)$};
 
@@ -947,7 +947,7 @@ If both of the encryption $Enc^{ASYM}$ and $Enc^{SYM}$ are CPA-secure, then the 
 \begin{center}
 \begin{tikzpicture}[>=latex]
 \node	[]	at 	(0,6)	{Challenger};
-\node	[]	at	(6,6)	{Adeversary};
+\node	[]	at	(6,6)	{Adversary};
 \node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
 \node	[]	at	(0,4.5)	{$(pk,sk)\leftarrow Keygen(1^n)$};
 
@@ -965,7 +965,7 @@ Here $Adv_\A=|\Pr(\A\rightarrow 1|b=0)-\Pr(\A\rightarrow 1|b=1)|$. The scheme is
 
 \Rem There are no encryption queries since $\A$ can do encryption by its own using the public key.
 
-\Rem It is almost the same as saying that $\A$ cannot distinguish between the following distribution : $(pk, Enc(pk,m_0))$ and $(pk, Enc(pk,m_1))$.
+\Rem It is almost the same as saying that $\A$ cannot distinguish between the following distribution : $(pk, Enc(pk,m_0))$ and $(pk, Enc(pk,m_1))$. $Enc$ is probabilistic, it is was on two successive encryptions of  $m_0$ are not the same.
 
 Not quite because $\A$ chooses $m_0,m_1$ after receiving $pk$. It is correct if plain-text space is $\bit$.
 
@@ -1037,4 +1037,143 @@ Consider the following game:
 We will get a DDH solver.
 \end{proof}
 
+\subsection{RSA encryption}
+RSA stands for Rivest-Shamir-Adleman. It was published in 1978. It is used in TLS/SSL.
+
+Recall that if you consider $a\in\Z/n\Z=\Z_n$. $a$ is invertible iff $gdc(a,b)=1$. One can prove it with Bézout : $gcd(a,n)=1\Leftrightarrow \exists u,v, au+nv=1$ then $ua = 1 \mod{n}$ and get the result.
+
+If $n=pq$ with $p,q$ prime numbers. Then $\Z_n^* = \{a\in\Z_n|gcd(a,n)=1\}$. Then $\phi(n)=|\Z_n^*|=(p-1)(q-1)$. Any $e\in\Z_{\phi(n)}$ such that $gcd(e,\phi(n))$ had a unique inverse $e^{-1}$ modulo $\phi(n)$.
+
+\subsubsection{Textbook RSA (determinitic)}
+\begin{itemize}
+\item $Keygen(1^\lambda)$ :
+\subitem chooses large primes $p,q>2^{l(\lambda)}$ for some polynomial $l$.
+\subitem chooses $e$ such that $gcd(e,\phi(n))=1$ with $n=pq$. Id compute $d=e^{-1}\mod{\phi(n)}$ and define $pk=(n,e)$ and $sk=(n,d)$.
+\item $Enc(pk,m)=m^e\mod{n}$
+\item $Dec(sk,c)=c^d\mod{n}$  
+\end{itemize}
+
+\paragraph{Correctness} $c^d\mod{n}=(m^e)^d\mod{n}=m^{ed\mod{\phi(n)}}\mod{n}=m\mod{n}$.
+
+\paragraph{Assumptions} It relies on the fact that $f(x)=x^e\mod{n}$ is injective when $gcd(e,\phi(n))=1$ and that under the RSA assumption, for any PPT $\A$, $\Pr(\A(n,e,y)=y^{e^{-1}} \mod{n}|n=pq, y\hookrightarrow Y(\Z_n^*))\leq negl(\lambda)$ (one-wayness).
+
+However it does not provide IND-CPA security because it is not probabilistic. Then we never use textbook RSA in practice.
+
+\subsubsection{Padded RSA (randomized)}
+\begin{itemize}
+\item $Enc(pk,m)=(r||m)^e\mod{n}$ with $r\hookrightarrow U(\bit^{|n|-t})$
+\item $Dec(sk,c)$ returns the $t$ least significant bits of $c^d\mod{n}$.
+\end{itemize}
+
+This scheme is PKCS\#1 v15 with $r=0002_{16}||r'||00_{16}$ where $r'$ is random and has size $|n|/8-3-|m|/8$. However it does not provide IND-CPA security either (Coron-Joye-Naccacha-Paillier) and is now replace by RASA-OAEP ()Bellare-Rogaway,1994).
+
+\paragraph{Efficiency} It depends on the length of $e$ and $d$, $|e|$ and $|d|$. We cannot use $e=2$ since $gcd(2,\phi(n))\neq 1$. $e=3$ is ok but often use $e=2^16+1=65537$ the forth Fermat-number. We can speed-up decryption using Chinese Remainder Theorem (CRT) : to get $m=c^d\mod{n}$, one can compute $m_p=c^d\mod{p}=c^{d_p}\mod{p}$ with $d_p=d\mod{\phi(p)}$ and $m_q=c^d\mod{p}=c^{d_q}\mod{q}$ with $d_q=d\mod{\phi(q)}$
+
+$m=c^d=q(q^{-1}\mod{p})m_p + p(p^{-1}\mod{p})m_q\mod{n}$. 
+
+It saves a factor $8$ compared to naive decryption. 
+
+\paragraph{Security} If $d$ is small ($d<n^{0.298}$) the scheme can be broken in polynomial time. 
+
+If we can factor $n$, we get $\phi(,)$ and then $d$. Conversely, computing $\phi(n)$ (or even a multiple of $\phi(n)$) is as hard as factoring $n$, computing $d$ from $(e,n)$ is as difficult as factoring since $ed-1$ is a multiple of $\phi(n)$.
+
+But breaking the RSA assumption may be easier than factoring.
+
+Hardness of factoring is about $2^{O(\log^{1/3}(n))}$ using GNFS. Then $l(\lambda)>\lambda^3/polylog(\lambda)$
+
+We now define the strong RSA assumption: given $n=pq$ and $y\hookrightarrow U(\Z_n^*)$ finding $(x,l)\in\Z_n^*\times\Z$ such that $y=x^e\mod{n}$ and $e>1$ is computationally infeasible.
+
+\subsubsection{The random oracle methodology}
+It was introduced in 1993 by Bellare and Rogaway.
+
+\Def{Random Oracle Model (ROM)}{}{It assumes that hash functions $H:\bit^*\rightarrow\bit^n$ behaves as truly random functions used as black boxes by adversary. For instance if domain and range are finite, pick a random evaluation table.}
+
+\underline{Other view}: for each new query $H(x)$ made by the adversary to the random oracle, the oracle returns $h_x\hookrightarrow U(\bit^n)$ and perhaprs $(x,h_x)$ us case $H(x)$ is hashed again.
+
+\paragraph{ROM methodology}
+\begin{itemize}
+\item Prone security of a scheme in the ROM
+\item Instantiate the scheme with a real hash function (SHA3) and hope that everything will be fine although SHA3 is not a RO.
+\end{itemize}
+
+The problems are that:\begin{itemize}
+\item R0 may not exist.
+\item There exists contrived constructions with proofs in the ROM but no secure instantiation with a real hash function
+\item ROM-based proofs are only heuristic arguments.
+\end{itemize}
+
+The advantages are that:
+\begin{itemize}
+\item Schemes in the ROM tend to be more efficient than those in the standard model
+\item A proof in the ROM is better than no proof at all
+\item No know natural construction is secure in the ROM but insecure in real life.
+\end{itemize}
+
+\Rem RO does not mean PRF. PRF is a keyed pseudo random function whereas RO is truly random.
+
+\Rem Power of ROM: success probability of aversary also taken over the randomness of $H$.
+
+In security proofs, reduction can program $H$, reductions can observe queries made by adversary to $H$.
+
+\subsubsection{IND-CPA encryption from RSA}
+It uses the ROM.
+
+\begin{itemize}
+\item $Keygen(1^\lambda)$
+\subitem Chooses $p,q>2^\{l(\lambda)\}$ for some polynomial $l$
+\subitem Set $n=pq$ and chooses $e$ such that $gcd(e,\phi(n))=1$
+\subitem Let $H:\Z_n^*\rightarrow\bit^{t(\lambda)}$ where messages live in $\bit^t(\lambda)$.
+\subitem Define $pk=(n,e,h)$ and $sk=d=e^{-1}\mod{\phi(n)}$
+\item $Enc(pk,m)=(r^e\mod{n},m\oplus H(r))$ where $r\hookrightarrow U(\Z_n^*)$
+\item $Dec(sk,c=(c_1,c_2))=c_2\oplus H(r)$ where $r=c_1^d\mod{n}$
+\end{itemize}
+
+\Thm{}{}{If the RSA problem is hard, the scheme provides IND-CPA security in the ROM.}
+\begin{proof}
+Let $\A$ be an IND-CPA adversary with advantage $\epsilon$. We build $\B$ with advantage $\varepsilon$ in computing $y^{e^{-1}}\mod{n}$ on input $(n,e,y)$ where $y\hookrightarrow U(\Z_n^*)$. 
+
+$\B$ runs $\A$ on input $pk = (n,e)$. At each query $H(r_i)$ made by $\A$ where $r_i\in\Z_n^*$, $\B$ checks if $y=r_ippe\mod{n}$. If yes it halts and outputs $r_i=y^{e^{-1}}\mod{n}$. Otherwise it return $h_i\hookrightarrow U(\bit^t)$ if $H(r_i)$ was undefined of the same $H(r_i)$ as before if has already been asked.
+
+At the challenge pahe, $\A$ chooses $m_0,m_1\in\bit^t$. Then $\B$ chooses $h^*\hookrightarrow U(\bit^t)$ and returns $c=(c_1,c_2)=(y,m_\beta\oplus h^*)$. 
+
+Implicitly, $\B$ defines $H(y^{e^{-1}}\mod{n})=h^*$.
+
+When $\A$ stops and returns $\beta'$ and wins if $\beta'=\beta$. ($Adv_\A=|\Pr(\beta=\beta')|-\half|$).
+
+Let "$find$" be the event that $\A$ queries the hash value $H(y^{e^{-1}}\mod{n})$.
+\[\begin{array}{r c l}
+\Pr(\beta'=\beta) &=& \Pr(\beta=\beta'|find)\Pr(find)+\Pr(\beta=\beta'|\neg find)\Pr(\neg find)\\
+&\leq&\Pr(find) + \Pr(\beta=\beta'|\neg find) \\
+&\leq& \Pr(find)+\half
+\end{array}\]
+Then $\Pr(find)\geq Adv_\A$. Moreover $Adv_\B\geq\Pr(find)$ what concludes the proof.
+\end{proof}
+
+\section{Digital signatures}
+The main goal is to get authenticity (instead of confidentiality). It was invented by Diffie and Hellman in 1976. The first realization was by Rivest-Shaimir-Adleman (1978).
+
+\subsection{Definition}
+\Def{}{}{A digital signature scheme is a triple of algorithms $(Keygen,Sign,Verify)$:\begin{itemize}
+\item $Keygen(1^\lambda)$: given a security parameter $\lambda$, returns a verification key $vk$ and a secret key $sk$
+\item $Sign(sk,m)$: given a secret key $sk$ and a message $m$, it outputs a signature $\sigma$.
+\item $Verif(vk,m,\sigma)$
+\end{itemize}}
+
+\Rem it can be seen as an asymmetric equivalent of MACs. 
+
+\Rem Somehow the singer "proves" knowledge of $sk$
+
+\Rem Sometimes $m$ can be recovered from $\sigma$ (signature with message recovery).
+
+\Rem the differences with handwritten signatures are that signature is specific to the document and you can cannot modify it after signing.
+
+\Def{Existential Unforgeability under chosen messsage attacks (EUFCMA)}{def:EUFCMA}{A digital signature scheme is EUFCMA-secure is no PPT adversary has non-negligible advantage in the following game:\begin{itemize}
+\item Challenger generates $vs,sk$ and gives $vk$ to adversary $\A$ and initializes $Q=\emptyset$
+\item $\A$ makes signing queries. A chooses $m$ and obtain $\sigma=sign(sk,m)$. Then the challenger update $Q\leftarrow Q\cup\{m\}$.
+\item $\A$ outputs $(m^*,\sigma^*)$ and wins if $verify(vk,m^*,\sigma*)=1$ and $m^*\notin Q$
+\end{itemize}
+
+Then $Adv_\A(\lambda)=\Pr(\A\text{ wins})$}
+
+\Rem There is also a notion of strong unforgeability. It is when $(m^*,\sigma*)\notin Q$.
 \end{document}
