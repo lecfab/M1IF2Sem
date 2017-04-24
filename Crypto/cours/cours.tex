@@ -1001,16 +1001,16 @@ The historical choice was to take $p$ prime a $G$ a subgroup of $(\Z/p\Z^*,\time
 \subitem For $(\F_p^*,\times)$, general number field Sieve is the best know algorithm. It works in $\exp(c(\log p)^{1/3}(\log\log p)^{2/3})$. In practice, 1024 bits are conjectured to ensure $2^80$ security.
 \subitem For $(\F_{p^k}^*,\times)$, small $p$ is very weak. For $p$ constant there exists a $2^{O((\log k)^2)}$ (Barbulescu,Goudry,Joux and Thomé).
 
-\subsection{The El-Gamel encryption scheme (1984)}
-It relies on a groupe $G$ of prime order $q$ and \begin{itemize}
-\item $Keygen$: samples $x\in F_q$ uniformly. The public key is $h=g^x$ and the secret key is $x$.
+\subsection{The El-Gamal encryption scheme (1984)}
+It relies on a group $G$ of prime order $q$ and \begin{itemize}
+\item $Keygen$: samples $x\in \F_q$ uniformly. The public key is $h=g^x$ and the secret key is $x$.
 \item $Enc_h(m)$ samples $r\in\F_q$ uniformly and sends $c=(c_0,c_1)=(g^r,mh^r)\in G^2$
 \item $Dec_x((c_0,c_1))$ returns $c_1/c_0^x$ since $mh^r/g^{rx}=mh^r/h^r=m$
 \end{itemize}
 
 \Rem We assume that $m\in G$.
 
-\Thm{}{}{If $DDH_G$ is hard then El Gamel is CPA secure.}
+\Thm{}{}{If $DDH_G$ is hard then El Gamal is CPA secure.}
 
 \begin{proof}
 Consider the following game:
@@ -1021,16 +1021,17 @@ Consider the following game:
 \node	[]	at 	(0,6)	{$\B$};
 \node	[]	at	(6,6)	{$\A$};
 \node	[]	at	(0,5)	{$b\hookrightarrow U(\{0,1\})$};
-\node	[]	at	(0,4.5)	{$(pk,sk)\leftarrow Keygen(1^n)$};
+%\node	[]	at	(0,4.5)	{$(pk,sk)\leftarrow Keygen(1^n)$};
 
 \draw [->] (-4,5) --node[above] {$g^a,g^b,g^{ab}$ or $g^c$} (-2,5);
 
-\draw	[->]	(1.5,4.5)	--node[above]	{$pk$}	(4.5,4.5);
+\draw	[->]	(1.5,4.5)	--node[above]	{$pk=g^a$}	(4.5,4.5);
 \draw	[->]	(4.5,3.5)	--node[above]	{$m_0,m_1$}		(1.5,3.5);
-\draw	[->]	(1.5,2.5)	--node[above]	{$c=(g^r,m_\beta h^r)$}	(4.5,2.5);
+\draw	[->]	(1.5,2.5)	--node[above]	{$c=(g^b,m_b g^c)$}	(4.5,2.5);
 
 
 \draw	[->]	(4.5,1.5)	--node[above]	{$\beta'$}		(1.5,1.5);
+\draw	[->]	(-2,1.5)	--node[above]	{$\beta'$}		(-4,1.5);
 \end{tikzpicture}
 \end{center}
 
@@ -1176,4 +1177,158 @@ The main goal is to get authenticity (instead of confidentiality). It was invent
 Then $Adv_\A(\lambda)=\Pr(\A\text{ wins})$}
 
 \Rem There is also a notion of strong unforgeability. It is when $(m^*,\sigma*)\notin Q$.
+
+\subsection{Motivation: Public-key infrastructures (PKI)}
+The problem is about how do we know that public key are genuine. One solution is to hare public keys signed by a trusted certification authority (CA) or by several CAs that certify one another (certification chain).
+
+Certificates contain a name , or public key, expiration date, name of the CA and a signature from the CA.
+
+The main difficulty is the certificate revocation (when keys get compromised). Usual approach is the revocation lists (RLs) published by CAs. Users have to download RLs frequently.
+\begin{itemize}
+\item SSL/TLS: for web pages, Symantec and Docomo are the largest certificated providers. When client/servers start discussing, client should validate server’s certificate before they start a key agreement protocol resulting in a session key to be used with AES.
+
+\item POP for emails: no actual CAs; users sign each other's public keys (web of trust)
+\end{itemize}
+
+\subsection{RSA signatures: RSA Ful Domain Hash (RSA-FDH)}
+We consider:\begin{itemize}
+\item $Keygen(1^\lambda)$:
+\subitem chooses long primes $p,q>2^{l(\lambda)}$ for some polynomial $l$.
+\subitem chooses $e,d$ such that $ed\equiv1\mod{\phi(n)}$.
+\subitem chooses a hash function $H:\bit^*\rightarrow\Z_n^*$
+
+Define $vk=(n,e,h)$ with $n=pq$ and eventually $sk=(p,q)$ of $sk=d$.
+\item $Sign(sk,m)=H(m)^d\mod{n}$.
+\item $Verif(vk,m,\sigma)$: accept iff $H(m)=\sigma^e\mod{n}$.
+\end{itemize}
+
+\Rem Hashing is crucial for security reasons.
+
+\paragraph{Naive RSA signatures} $m\in\Z_N^*$ is signed bt computing its $e$-th root: $\sigma=m^d\mod{n}$. The problems are \begin{itemize}
+\item it is not EUF-CMA because of the multiplicative homomorphism. If $\sigma_A=m_A^d\mod{N}$ and $\sigma_2=m_2^d\mod{N}$ then $verify(vk,m_1m_2\mod{N},\sigma_1\sigma_2\mod{n})=1$.
+\item Even worse: existential attack since adversary chooses $\sigma\hookrightarrow U(\Z_N^*)$ and sets $m=\sigma^z\mod{N}$ so that $verify(vk,m,\sigma)=1$.
+
+\item Tentative countermeasure is to apply a padding for $m$ : $m\mapsto 00||01||F||\ ||FF||00||m$ but it may be insufficient.
+\end{itemize} 
+Then standardized RSA signature is RAS-PSS (Probabilistic Signature Scheme).
+
+\Thm{}{thm:RSAFDH-EUFCMA}{RSA-FDH provides EUF-CMA security in the random oracle model if the RSA problem is hard.}
+
+The intuition is that the adversary can only forge on $m^*$ for which $H(m^*)$ is ashed to the RO: if there is no query $H(m^*)$ then $H(m^*)$ is completely unpredictable. The success probability is at most $1/N$ (negligible).
+
+Reduction can guess with probability $1/Q_H$, where $Q_H$ is the number of RO-queries, which RO-query involves $m^*$ and embed on RSA instance in $H(m^*)$.
+
+\begin{proof}
+Let $\A$ be an EUF-CMA adversary with advantage $\epsilon$. We build an RSA solver $\B$ with advantage $\epsilon/Q_H$ where $Q_H$ is the number of hash queries.
+
+$\B$ takes as input $(N,e,y)$ and must find $y^{1/e}\mod{N}$
+
+$\B$ chooses $j\hookrightarrow(\{1...Q_H\})$ and gives $vk=(N,e)$
+
+Let $m_i$ be the input of the $i$-th hash query for each $i\in\{1,...,Q_H\}$
+
+$\B$ initializes an empty list $L_H$.
+\\
+$\B$ has to deal with queries:
+\begin{itemize}
+\item RO queries, $H(m_i)$: if $i\neq j$, $\B$ chooses $\sigma_i\hookrightarrow U(\Z_N^*)$ and defines $H(m_i)=\sigma_i^e\mod{N}$ and stores $\{(m_i,h_i,\sigma_i)\}$, where $h_i=\sigma_i^e\mod{N}$, in $L_H$. Otherwise $i=j$ and $\B$ defines $H(m_j)=y$ and stores $\{(m_j,y,\ast)\}$ in $L_H$.
+
+\item Signing queries ($m$): we assume $H(m)$ was queried to the TO before. $\B$ looks up $L_H$ to find $(m,h,\sigma)$ If $\sigma=\ast$, $\B$ aborts and fails since it cannot provide $H(m)^{1/e}\mod{N}$ to $\A$. Otherwise $\sigma\neq\ast$ then $\B$ correctly answer and return $\sigma=H(m)^{1/e}\mod{N}$.
+\end{itemize}
+
+$\A$ outputs $(m^*,\sigma^*)$. If $m^*\neq m_j$ then $\B$ aborts otherwise we have $H(m^*)=y$ so that $\sigma^*=y^{1/e}\mod{N}$ is the RSA solution.
+
+Then if $\B$ correctly guessed $j\in\{1,...,Q_H\}$ we have $m^*=m_j$. Then $\B$'s advantage is at least $\epsilon/Q_H$.
+\end{proof}
+
+\Rem \begin{itemize}
+\item RSA-FDH has a tighter reduction in the ROM (advantage is at least $\epsilon/(cQ_H)$)
+\item RSA-FDH cannot be proved in the standard model under RSA assumption (e,g, Paillier, 2007)
+\item Signatures with security proofs in the standard model under the RSA assumption exist but are more complex.
+\end{itemize}
+
+\paragraph{Hash and sign} Let $\Pi=(Keygen;Sign,Verif)$ be an EUF-CMA secure signature for fixed-length message (in $\bit^l$). Let $H:\bit^*\rightarrow\bit^l$ be a collision resistant hash function. To sign $M\in\bit^*$ compute $m=H(M)\in\bit^l$ and output $\sigma=sign-sk,m)$.
+
+\Thm{}{}{If $M$ is EUF-CMA secure and $H:\bit^*\rightarrow\bit^l$ collision resistant, the modified signature is also EUF-CMA secure.}
+
+\subsection{Discrete Logarithm based signatures}
+\subsubsection{Schor's signature (1991)}
+It can be ssen as a proof of knowledge of a discrete logarithm $X=g^x$ where $g$ generates a cyclic group $G$.
+\begin{itemize}
+\item $Keygen(1^\lambda)$:
+\subitem chooses a cyclic group $G$ of prime order $q>2^\lambda$ with $g\hookrightarrow U(G)$.
+\subitem chooses $x\hookrightarrow U(\Z_q)$ and compute $X=g^x$
+\subitem chooses a hash function $H:\bit^*\rightarrow\Z_q$
+
+Define $vk=(G,g,X,H)$ and $sk=x\in\Z_q$
+\item $sign(sk,m)$:
+\subitem choose $r\hookrightarrow U(\Z_q)$
+\subitem compute $R=g^r\in G$
+\subitem compute $c=H(m,R)\in\Z_q$
+\subitem compute $s=r+cx\mod{q}$ and output $\sigma=(c,s)\in\Z_q^2$.
+
+\item $Verif(vk,m,\sigma)$: compute $R'=g^sC^{-c}$ and accept $\sigma$ iff $c=H(m,R')$
+\end{itemize}
+
+\Rem $verif$ is correct as $g^sX^{-c}=g^{r+cx}X^{-c}=g^{r+cx}(g^x)^{-c}=g^r=R$.
+
+\Thm{Pointcheval-Stern,1996}{}{Schor's signature is EUF-CMA secure in the ROM under the Discrete Logarithm assumption in $G$.}
+
+The idea of the proof it that given $X\in G$, from two pairs $(c,s)$ and $(c',s')$ such that $g^sX^{-c}=g^{s'}X^{-c'}$ we can compute $x=\log_g(X) = (s-s')/(c-c')\mod{q}$. The reduction runs adversary $\A$ several times with distinct ROs, $H:\bit^*\rightarrow\Z_q$ until it gets such pairs $(c,s)$ and $(c',s')$.
+
+\Rem \begin{itemize}
+\item signer can compute $R=g^r$ before knowing $M$ only on multiplication.
+\item Signer should never re-use tje same $r\in\Z_q$ in distinct signatures.
+\end{itemize}
+
+\subsubsection{The Katz-Wang signature}
+It is less efficient than Schor's one but the proof is simpler.
+
+\begin{itemize}
+\item $Keygen(1^\lambda)$:
+\subitem chooses a cyclic group $G$ of prime order $q>2^{\lambda}$ with $g,h\hookrightarrow U(G)$.
+\subitem chooses $x\hookrightarrow U(\Z_q)$ and set $X=g^x$ and $Y=h^x$.
+\subitem chooses a hash function $H:\bit^*\rightarrow\Z_q$
+
+Define $vk=(G,g,h,X,Y,H)$ and $sh=x$
+
+\item $sign(sk,m)$:
+\subitem chooses $r\hookrightarrow U(\Z_q)$
+\subitem compute $R_1=g^r$ and $R_2=h^r$
+\subitem compute $c=J(M,R_1,R_2)\in\Z_q$
+\subitem compute $s=r+cx\mod{q}$ and output $\sigma=(c,s)$
+
+\item $Verif(vk,M,\sigma)$ Given $\sigma=(c,s)\in\Z_q^2$ compute $R_1'=g^sX^{-c}$ and $R_2'=h^sY^{-c}$ and accept iff $c=H(MnR_1',R_2')$
+\end{itemize}
+
+\Rem $verif$ is correct by the same argument used for Schor's signature
+
+\Rem $\sigma$ can be used as a non-interactive proof that $log_g(X)=\log_h(Y)$ (i.e. $vk=(g,h,X,Y)$ is a Diffie-Hellamn tuple).
+
+\Thm{}{}{The KW scheme is EUF-CMA secure in the ROM under the DDH assumption on $G$}
+
+\begin{proof}
+Let $\A$ be an adversary against EUF-CMA with advantage $\epsilon$. We build a DDH distinguisher $\B$ with advantage close to $\epsilon$.
+
+$\B$ takes as input $(g,h,X,Y)$ and must decide if $\log_g(X)=\log_h(Y)$
+
+$\B$ runs $\A$ on input of $vk=(g,h,X,Y)$ Then $\A$ makes queries:
+
+\begin{itemize}
+\item Hash queries $H(M,R_1,R_2)$: $\B$ returns the previously defined value if it exists. Otherwise it return a random $h\hookrightarrow U(\Z_q)$ and defines it.
+
+\item Signing queries $M$: $\B$ picks $(c,s)\hookrightarrow U(\Z_q^2)$ and compute $R_1 = g^sX^{-x}$ and  $R_2 = h^sX^{-x}$. If $H(M,R_1,R_2)$ is already defined, $\B$ fails otherwise $\B$ defines $H(M,R_1,R_2)=c$.
+\end{itemize}
+
+When $\A$ outputs $(M^*,\sigma^*=(c^*,s^*))$, if $H(M^*,g^{s^*}X^{-c^*},h^{s^*}X^{-c^*})=c^*$, then $\B$ outputs $1$, otherwise it outputs $0$.
+
+The simulation made by $\B$ is perfect if $\B$ does not fails. $\Pr(\B\text{ fails})\leq Q_S(Q_H+Q_S)/q$. Then $\Pr(B=1|(g,h,X,Y)=(g,h,g^x,h^x))\geq \epsilon -\frac{Q_S(Q_H+Q_S)}{q}$.
+
+If $(g,h,X,Y)=(g,h,g^x,h^y)$ with $x,y$ uniform. They are distinct with proba $1-1/q$.
+
+Then for each $H(M,R_1,R_2)$ there exists exactly one pair (c,s) such that $R_1=g^sX^{-c}$ and $R_2=h^sX^{-c}$, that are two independent equations in the exponent, and $\B$ respond $H(M,R_1,R_2)=c$ with proba $1/q$.
+
+Then $(c^*,s^*)$ can only stands for $M^*$ with proba $Q_H/q\times1/q$. Then the advantage is at least $\epsilon -\frac{Q_S(Q_H+Q_S)+Q_H+1}{q}$
+
+\end{proof}
 \end{document}

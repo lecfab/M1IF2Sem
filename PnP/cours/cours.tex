@@ -771,4 +771,45 @@ On a $\rightarrow_\beta\subseteq\beta_0$. On peut conclure dessus. Il suffit alo
 \end{proof}
 
 On peut maintenant revenir sur le théorème \ref{prop:CurrySR}. On conclut avec la proposition \ref{prop:equivCurrySeq}.
+
+\section{Théorie des types intentionnelle.}
+\subsection{Usage des inductifs dans Coq.}
+\subsubsection{Les booléens.}
+On a $bool=\{true,false\}$ et les règles suivantes
+\[\begin{array}{r l}
+\rRule{bool.fonction}{}{bool.Type} & \rRule{bool-intro1}{}{true:bool}
+\end{array}\]
+\[\rRule{bool-elim}{b:bool\ \ \ t:C\ \ \ f:C}{case\ b\ \{true\rightarrow t,false\rightarrow f\}:C}\]
+
+Ceci correspond à une sorte d’énoncé d'un principe d'induction sur $bool$ : pour $P:bool\rightarrow Type$, si $P\ true$ et $P\ false$ sont habitables alors pour tout $b:bool$ on a $P\ b$ habitable. On a alors $ind_{bool}\ P\ t\ f\ b: P\ b$ quand $\vdash t : P\ true$ et $\vdash f : P\ false$.
+
+Dans Coq, l'instruction (Inductive bool : Type:=| true : bool| false : bool.) engendre un nouveau type $bool:Type$, les constructeurs $true$ et $false$ et le principe d'induction de type.
+
+$(\Pi P:bool\rightarrow Type)\\ P\ true\rightarrow\\P\ false\rightarrow\\
+(\Pi b:bool)(P\ b)$
+
+On aurait pu alors donner  $ind_{bool}\ P\ t\ f: (\Pi b:bool)(P\ b)$.
+
+\subsubsection{Les entiers de Peano.}
+On a $nat: Type, 0:nat, S:nat\rightarrow nat$ puis (Inductive nat:Type := |0 : nat | S : nat -> nat.) dans Coq. On en déduit exactement les règle d'introduction.
+
+Pour d'induction, si on prend $P:nat\rightarrow Type$ tel que $z:P\ 0$ et $f:(\Pi x:nat)\ P\ x\rightarrow P (S\ x)$ alors on a $(\Pi x:nat)(P\ x)$. Ceci peut donner la règle suivante : \[\rRule{Nat-elim}{P:nat\rightarrow Type\ \ z:P_ 0\ \ f:(\Pi x.nat)(P\ x\rightarrow P\ (S\ x))\ \ n:nat}{Ind_{nat}\ P\ z\ f\ n:P\ n}\]
+
+$Ind_{nat}\ P\ z\ f\ 0 \rightarrow_\iota z:P\ 0$ et $Ind_{nat}\ P\ z\ f\ (S n) \rightarrow_\iota z:P\ (S\ n)$
+
+\subsubsection{Le produit $A\times B$ et la somme $A+B$}
+Inductive prod (A B:Type) : Type := pair : A -> B -> prod A B.
+
+Inductive sum (A B:Type) : Type := | inl : A -> sum A B | inr : B -> sum A B.
+
+CF code de P.Audebaud.
+
+\subsection{Types dépendants.}
+cf notes en ligne
+
+\subsection{Egalité}
+Dans Coq on utilise l'égalité de Leibniz : si pour tout $P:A\rightarrow Type$, $P\ a \rightarrow P\ b$ Ainsi pour on prend $P\equiv \lambda x.x=a$ pour prouver la symétrie. De même pour la transitivité.
+
+\subsubsection{Définition inductive}
+L'idée est de prendre $x,y:A\vdash Id_A(x,y):Type$ qui signifiera "$x=_A y$" d'où la règle de formation \[\rRule{Id-from}{A:Type\ \ a:A\ \ b:A}{Id_A(a,b):Type}\] "type identité". On a ensuite l'introduction $\rRule{Id-intro}{a:A}{Id_A(a,a)}$ et rien d'autre. On a dans Coq : Inductive Id (A:Type) : A->A->Type := Id reflexive : forall x:A, Id A x x.
 \end{document}
