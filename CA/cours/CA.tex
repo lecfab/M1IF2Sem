@@ -10,6 +10,7 @@
 \usepackage{tikz}
 \usepackage{algorithm}
 \usepackage{algorithmicx}
+\usepackage{enumitem}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{claim}{Claim}
@@ -1363,4 +1364,201 @@ The theorem does not hold if we have 2 dominant eigenvalues e.g $A = \begin{pmat
 \end{pmatrix},$ for $b_0 = \begin{pmatrix}\alpha\\\beta\end{pmatrix}, b_N = \begin{pmatrix}
 \alpha\\(-1)^N\beta
 \end{pmatrix}$, so $b_{2N}$ and $b_{2N+1}$ converge, but not to eigenvectors.
+
+How to get all eigenvalues at once ?
+\subsubsection{QR method}
+Recall Gram-Schmidt process :
+$(b_i) \text{ basis } b_i^* = b_i - \sum\limits_{j < i}\mu_{ij}b_j^* (\star)$\\
+with $\mu_{ij} = \frac{(b_i|b_j^*)}{||b_j^*||^2}$\\
+Put $c_i^* = \frac{b_i^*}{||b_i^*||} (b_i^* \neq 0$ because it's a basis)
+
+\begin{claim}
+	$(c_i^*)$ is an orthonormal basis, i.e $(c_i^*|c_j^*) = \delta_{ij}$\\
+	so the matrix $\begin{pmatrix}
+		c_1^*&c_2^*&\cdots&c_n^*
+	\end{pmatrix} = Q$ is orthogonal.
+\end{claim}
+The matrix from $b_i$ to $c_i^*$ is triangular thanks to $(\star)$ ; call it R.\\
+So starting from a matrix A, we get A = QR with Q orthogonal and R triangular.\\
+
+Define $A_1 = RQ$, then $QA_1Q^{-1} = A$ so $A$ and $A_1$ have the same eigenvalues.\\
+Similarly, we can find $Q_1,R_1$ s.t $A_1 = Q_1 R_1$ and define $A_2 = R_1 Q_1$\\
+vdots\\
+$A_i = Q_i R_i$\\
+$A_{i+1} = R_i Q_i$\\
+
+\begin{theorem}
+	$\forall i, A_i$ has the same eigenvalues as A.\\
+	If $A_i$ converges to some limit L and L is upper triangular, then the eigenvalues of A can be read on the diagonal of L.
+\end{theorem}
+
+\begin{proof}
+	(use the fact that eigenvalues are continuous functions of the matrix)
+\end{proof}
+
+\begin{remark}
+	If the eigenvalues of M have diffrent modules, the sequence "converges" to an upper triangular matrix.\\
+	The speed of convergence depends on $\max \frac{|\lambda_K}{\lambda_{K+1}}$, where $|\lambda_1| < \dots < |\lambda_n|$
+\end{remark}
+
+\section{Real numbers}
+\subsection{The floating-point model}
+1984 IEEE\\
+Basic idea: choose a finite subset of $\R$, $\mathcal{F} = \{x_1,\dots,x_N\}$. The operations are defined by $z = x \text{ op } y$ means \begin{itemize}
+	\item do the exact mathematical operation $z_0 = x \text{ op } y$
+	\item Round $z_0$ to an element of $\mathcal{F}$
+\end{itemize}
+4 rounding mods in IEEE standard:
+\begin{itemize}[label=$-$]
+	\item to zero O(z) = $\begin{array}{r l}
+		\downarrow(z) &$ if $z > 0\\
+		\uparrow(z) &$ if $z < 0
+	\end{array}$
+	\item up : $\uparrow(z) = \inf([z,+\infty[ \cap \mathcal{F})$
+	\item down : $\downarrow(z) = \sup(]-\infty,z]\cap\mathcal{F})$
+	\item nearest \dots
+	\end{itemize}
+	How do we pick $\mathcal{F}$ ?\\
+	Say we want to compute some $X$ \& we get $ X^* $\\
+	Two ways to measure the quality of approx:
+	\begin{itemize}[label=]
+		\item Absolute error $ |X-X^* $ - fixed point model
+		\item Relative error ($X \neq 0$) $ \frac{|X - X^*|}{|X|} $ - floating point model
+	\end{itemize}
+	In the fixed point model, we get, $\forall z,$ a bound of the kind $ |z - RND(z)| \leq \epsilon $ for some $\epsilon$ (interval between two elements of $ \mathcal{F} $)\\
+	In the floating point model, get $ \frac{|z - RND(z)}{|z|} \leq \epsilon'$ for some $\epsilon'$\\
+	
+	More details about $ \mathcal{F} $ for fp model:
+	\begin{itemize}[label=$*$]
+		\item precision\\
+		3 different standard formats:
+		\begin{itemize}[label=]
+			\item float aka binary32	p=23
+			\item double aka binary64	p=53
+			\item quad aka binary128	p=113
+		\end{itemize}
+		A floating point number has
+		\begin{itemize}[label=$-$]
+			\item a sign $\epsilon\in\{1,-1\}$	1 bit
+			\item a mantissa $m \in[|2^{p-1}, 2^o-1|]$	p bits
+			\item an exponent $e \in [|e_{min},e_{max}|]$ 	E bits
+		\end{itemize}
+		the corresponding fp number is $\epsilon(m.2^{1-p}).2^e$\\
+		where tas the machine representation is the triple $(\epsilon,m,e)$\\
+		
+		$ \begin{array}{c c c c}
+		& p & E &\\
+		bin32 & 23 & 9 & (e_{min} = -256,e_{max} = 255)\\
+		bin64 & 53 & 11 & (e_{min} = -1024,e_{max} = 1023)\\
+		bin128 & 113 & 15 & (e_{min} = -2^{14},e_{max} = 2^{14}-1)
+		\end{array} $
+		
+		\emph{The leading bit of the mantissa is not stored.}
+	\end{itemize}
+	\begin{remark}
+		Nearest rounding : take the closest element to z, if there's is a tie, pick the one with even mantissa
+	\end{remark}
+	5 special floating pt numbers : $\pm 0, \pm \infty, NaN$\\
+	$+\infty + -\infty = NaN$\\
+	$+\infty =$ overflows, $1/+0,$ \dots\\
+	$-\infty =$ overflowsn $1/-0$, log(+0), \dots
+	\subsubsection{Subnormals} Invented to prevent underflows which would be too rough.\\
+	typical situation\\
+	$f_1 = (2^{p-1}+1).2^{1-p}.2^{e_{min}}\\
+	f_2 = (2^{p-1}).2^{1-p}.2^{e_{min}}\\
+	f_1 \neq f_2$ but $f_1 - f_2 = RND(2^{1-p}.2^{e_{min}}) = 0$ (unless we round up)\\
+	subnormals: The value $e = e_{min}$ is reserved for subnormals. In that case, the mantissa is no longer assumed to be in $[2^{p-1},2^p-1],$ but in $[0,2^{p-1}-1]$.
+	
+	\subsubsection{Counter-intuitive behaviour}
+	$X_1 =$ small\\
+	$X_2 =$ big\\
+	$X_3 = -X_2$\\
+	Round to nearest.\\
+	$(X_1 + X_2) + X_3 = X_2 + X_3 = 0$\\
+	$X_1 + (X_2 + X_3) = X_1$
+	
+\subsection{Elementary function evaluation}
+
+For floating-point:
+$|x|< 2^{-15}, \exp(x) = 1 + x + x^2/2 + x^3/6 + O(x^4)$\\
+so we approximate in this range $\exp(x)$ by $1+x+x^2/2+x^3/6$\\
+For x larger, $ \exp(x) = exp(x/2^k)^{2^k} $\\
+
+In general:
+Step 1: range reduction, to compute f(x), reduce to $x \in$ small interval I.\\
+Step 2: over I, replace f by a good polynomial approx of it.\\
+
+\subsubsection{Asymptotic wolrd}
+Strategy 1: Use Taylor expansion (see TD)\\
+Strategy 2: Use swiss army knife: AGM\\
+
+AGM = Arithmetico Geometric Mean - Gauss.\\
+Let $a,b\in\R^+,$ define $a_0 = a, b_0 = b,\\
+a_{n+1} = \frac{a_n+b_n}{2}\\
+b_{n+1} = \sqrt{a_nb_n}$
+
+\begin{claim}
+	$a_n,b_n$ converge to a common limit called AGM(a,b)
+\end{claim}
+\begin{proof}
+	Assume $a\geq b$, it is always the case after 1 step as $a_1 \geq b_1$\\
+	then $a_{n+1} = \frac{a_n+b_n}{2} \leq \frac{a_n+a_n}{2} = a_n$, so $a_n\searrow$.\\
+	Similarly $b_n\nearrow$.\\
+	So $a_n,b_n$ converge to a common limit.
+\end{proof}
+
+\begin{claim}
+	$a_n-b_n$ tends to 0 as $\alpha^{2^n}$ ; $\alpha < 1$
+\end{claim}
+\begin{proof}
+	$a_n-b_n\rightarrow 0$\\
+	\begin{align*}
+	a_{k+1} - a_{k+1} = & \frac{a_k+b_k}{2} - \sqrt{a_kb_k}\\
+	= & \frac{(\sqrt{a_k}-\sqrt{b_k})^2}{2}\\
+	= & \frac{(a_k - b_k)^2}{2(\sqrt{a_k} + \sqrt{b_k})} \\
+	\leq & \frac{(a_k-b_k)^2}{8.\min(a,b)}
+	\end{align*}
+	Define $l_k = \log(a_k-b_k)$\\
+	$l_{k+1} \leq 2l_k - \log(8\min(a,b))$\\
+	so $l_{k+1} - \lambda \leq 2(l_k - \lambda)$ with $\lambda = \log(8\min(a,b))$\\
+	$l_{k+1} \leq 2^{k+1-n_0}(l_{n_0} - \lambda) + \lambda$\\
+	Pick $\epsilon$ and $n_0$ s.t $\log(\epsilon) - \lambda < 0, |a_{n_0} - b_{n_0}| < \epsilon$\\
+	then $a_{k+1} - b_{k+1} \leq \beta.\alpha^{2^k}$\\
+\end{proof}
+	
+	Bottomline: Once $a_k-b_k$ is small enough, the \# of correct digits double at every step.\\
+	Define: $I(a,b) = \int_{0}^{\pi/2}\frac{\mathrm{d}t}{\sqrt{a^2\cos^2t+b^2\sin^2t}}$
+\begin{claim}
+	$I(a,b) = I(\frac{a+b}{2},\sqrt{ab})$.\\
+	So by induction and as I is continuous, $I(a,b) = I(AGM(a,b),AGM(a,b))$\\
+\end{claim}	
+Now $I(u,u) = \int_{0}^{\pi/2} \frac{\mathrm{d}t}{|u|} = \frac{\pi}{2|u|}$
+
+\begin{theorem}
+	$I(a,b) = \frac{\pi}{2.AGM(a,b)}$
+	\end{theorem}
+\begin{proof}
+	\begin{enumerate}
+		\item Change $t$ in $x$ s.t $x = \tan t$.
+		\item Change $x$ in $s$ s.t $x = s + \sqrt{s^2 + ab}$
+	\end{enumerate}
+\end{proof}
+
+\begin{theorem}
+	$I(1,\frac{4}{s}) = \log(s) + \frac{4\log s - 4}{s^2} + \frac{36 \log s -42}{s^4} + o(\frac{1}{s^4})$\\
+	If we want log s to p bits of precision, assuming $s > 2^{p/2 + \text{small}}$, we have $|\frac{\pi}{2AGM(1,\frac{4}{s})} - \log(s)| < 2^{-p}$\\
+	
+	Two issues:\begin{itemize}[label=$*$]
+		\item $\pi$
+		\item We need s to be large enough.
+	\end{itemize}
+	For the 2nd point : pick k s.t $2^k s > 2^{p/2+\text{small}}$ and $|\frac{\pi}{2AGM(1,4/s)} - \log s - k \log 2| < 2^{-p/2}$, if we have $\pi$, log 2 with sufficient precision, we are good $\Rightarrow$ get log s.\\
+	
+	Algorithm say $s \in [1,2]$
+	\begin{itemize}[label=$*$]
+		\item Compute $\frac{\pi}{2AGM(1,\frac{4}{s2^{p/2 + small}})} - (p/2 + small)log 2$
+		\item Complexity is the complexity of AGM to p bits of precision
+		\item Every step of AGM costs.
+	\end{itemize}
+\end{theorem}
 \end{document}
